@@ -1,5 +1,6 @@
 import express from "express";
-import {Appointment} from '../classes/classes.js'
+import {Appointment} from '../classes/classes.js';
+import { write } from "../connectors/dbConnector.js";
 
 const router = express.Router();
 
@@ -26,7 +27,14 @@ router.post('/', (req, res) =>{
     else {
         let appointment = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important )
         console.log(appointment);
-        res.status(200).json(appointment)
+
+    write("appointments", appointment )
+        .then(console.log)
+        .catch(console.error)
+        .finally(() => {
+            res.status(200).json(appointment)
+        });
+
     }
 })
 
