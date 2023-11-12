@@ -4,7 +4,7 @@ import {v4 as uuid} from 'uuid';
 const pattern = date.compile('DD.MM.YYYY - HH:MM')
 
 export class Appointment {
-    constructor(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important){
+    constructor(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created){
 
         this.subject = subject
         this.fullDay = fullDay
@@ -21,7 +21,7 @@ export class Appointment {
         this.done = false
         this.important = important
         this.creator = creator
-        this.created = date.format(new Date(), pattern)
+        this.created = created
         this.uuid = uuid()
     }
 }
