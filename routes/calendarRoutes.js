@@ -1,6 +1,6 @@
 import express from "express";
 import {Appointment} from '../classes/classes.js';
-import { write, findAll, findOne } from "../connectors/dbConnector.js";
+import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
 import date from 'date-and-time';
 
 const router = express.Router();
@@ -51,6 +51,24 @@ router.post('/', (req, res) =>{
 
         }
     })
+
+router.delete('/:uuid', (req, res) =>{
+    
+    deleteOne('appointments', req.params.uuid)
+    .then((d) => res.status(200).json(d))
+    .catch((err) => res.status(404).json(err))
+    
+})
+
+router.patch('/:uuid', (req, res) =>{
+    
+    if (!req.body) return res.status(404).json('Missing body...')
+
+    patchOne('appointments', req.params.uuid, req.body)
+    .then((d) => res.status(200).json(d))
+    .catch((err) => res.status(404).json(err))
+    
+})
 
 
 export default router

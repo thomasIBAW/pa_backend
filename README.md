@@ -40,3 +40,28 @@ Endpoint `GET`  `/calendar/<UUID>`
 
 Payload (JSON)
 `none`
+
+### Update one Calendar entry
+
+Endpoint `PATCH`  `/calendar/<UUID>` 
+
+Payload (JSON)
+```
+{
+  "attendees": [
+    "Lionel",
+    "Lu"
+  ],
+  "tags": ["schule", "Wald"]
+}
+```
+NO need to patch everthing. Just add the changed Data into the JSON payload.
+
+### Delete one Calendar entry
+
+Endpoint `DELETE`  `/calendar/<UUID>` 
+
+Payload (JSON)
+`none`
+
+!!!Warning No Confirmation asked. Cannot be undone.
