@@ -32,7 +32,7 @@ export async function findAll(coll) {
   const db = client.db(dbName);
   const collection = db.collection(coll);
 
-  const findResult = await collection.find({}).sort({dateTimeStart:1}).project({subject:1,dateTimeStart:1, uuid:1}).toArray();
+  const findResult = await collection.find({}).sort({dateTimeStart:1}).project({_id:0}).toArray();
   console.log('Found documents =>', findResult);
 
   return findResult;

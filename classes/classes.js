@@ -29,7 +29,7 @@ export class Appointment {
 
 export class Person {
     constructor(firstName, lastName, nickName, dob, email){
-        this.firstname = firstName
+        this.firstName = firstName
         this.lastName = lastName
         this.nickName = nickName
         this.dob = dob
@@ -38,7 +38,7 @@ export class Person {
     }
 }
 
-export class Tags {
+export class Tag {
     constructor(name, color){
         this.tagName = name
         this.tagColor = color
