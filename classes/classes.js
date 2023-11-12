@@ -27,6 +27,23 @@ export class Appointment {
     }
 }
 
+export class Person {
+    constructor(firstName, lastName, nickName, dob, email){
+        this.firstname = firstName
+        this.lastName = lastName
+        this.nickName = nickName
+        this.dob = dob
+        this.email = email
+        this.uuid = uuid()
+    }
+}
 
+export class Tags {
+    constructor(name, color){
+        this.tagName = name
+        this.tagColor = color
+        this.uuid = uuid()
+    }
+}
 
 
