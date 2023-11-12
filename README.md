@@ -64,4 +64,5 @@ Endpoint `DELETE`  `/calendar/<UUID>`
 Payload (JSON)
 `none`
 
-!!!Warning No Confirmation asked. Cannot be undone.
+> [!WARNING]
+> No Confirmation asked. Cannot be undone.
