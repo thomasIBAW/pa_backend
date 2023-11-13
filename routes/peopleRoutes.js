@@ -1,5 +1,6 @@
 import express from "express";
 import {Person} from '../classes/classes.js';
+import {logger} from '../middlewares/loggers.js'
 import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
 import date from 'date-and-time';
 
@@ -11,7 +12,9 @@ router.get('/', (req, res) =>{
     
     findAll(collection)
     .then((d) => res.status(200).json(d))
-    .catch((err) => res.status(404).json(err))
+    .catch((err) => {
+        logger.error(err)
+        res.status(404).json(err)})
 
 })
 
@@ -19,7 +22,9 @@ router.get('/:uuid', (req, res) =>{
     
     findOne(collection, req.params.uuid)
     .then((d) => res.status(200).json(d))
-    .catch((err) => res.status(404).json(err))
+    .catch((err) => {
+        logger.error(err)
+        res.status(404).json(err)})
     
 })
 
@@ -38,7 +43,9 @@ router.post('/', (req, res) =>{
 
         write(collection, person )
             .then(console.log)
-            .catch(console.error)
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)})
             .finally(() => {
                 res.status(200).json(person)
             });
@@ -50,7 +57,9 @@ router.delete('/:uuid', (req, res) =>{
     
     deleteOne(collection, req.params.uuid)
     .then((d) => res.status(200).json(d))
-    .catch((err) => res.status(404).json(err))
+    .catch((err) => {
+        logger.error(err)
+        res.status(404).json(err)})
     
 })
 
@@ -60,7 +69,9 @@ router.patch('/:uuid', (req, res) =>{
 
     patchOne(collection, req.params.uuid, req.body)
     .then((d) => res.status(200).json(d))
-    .catch((err) => res.status(404).json(err))
+    .catch((err) => {
+        logger.error(err)
+        res.status(404).json(err)})
     
 })
 
