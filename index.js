@@ -13,13 +13,12 @@ app.use('/people', peopleRouter)
 app.use('/tags', tagsRouter)
 
 
-// Error handling middleware
+// API Error handling (express middleware)
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
       // Handle the error here
-      console.error('Bad JSON');
       logger.error(err)
-      res.status(400).send('Bad JSON');
+      res.status(400).send('Bad JSON in Payload. Check for typos');
     } else {
       // Pass on to the next error handler
       next(err);
