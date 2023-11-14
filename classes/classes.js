@@ -46,4 +46,20 @@ export class Tag {
     }
 }
 
+export class Todo {
+    constructor(subject, creator, deadline , fullDay, attendees, note, important,created, tags){
 
+        this.subject = subject
+        this.fullDay = fullDay
+        this.deadline = date.format(new Date(deadline), pattern)
+        this.attendees = attendees
+        this.note = note
+        this.tags = tags
+        this.deleted = false
+        this.done = false
+        this.important = important
+        this.creator = creator
+        this.created = created
+        this.uuid = uuid()
+    }
+}

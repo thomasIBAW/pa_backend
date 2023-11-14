@@ -55,3 +55,19 @@ export const tagsSchema = Joi.object({
     tagColor: Joi.string()
         .pattern(/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/)
 });
+
+export const todoSchema = Joi.object({
+    subject: Joi.string()
+        .min(3)
+        .max(30)
+        .required(),
+    creator: Joi.string()
+        .min(3)
+        .max(30),
+    deadline: Joi.date(),
+    attendees: Joi.array(),
+    tags: Joi.array(),
+    note: Joi.string(),
+    fullDay: Joi.boolean(),
+    important: Joi.boolean()
+});

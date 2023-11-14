@@ -1,24 +1,25 @@
 import express from "express";
-import {Person} from '../classes/classes.js';
-import {logger} from '../middlewares/loggers.js'
+import {Todo} from '../classes/classes.js';
 import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
-import { personSchema } from "../classes/schemas.js";
+import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
-const pattern = date.compile('DD.MM.YYYY')
+import { todoSchema } from "../classes/schemas.js";;
 
 const router = express.Router();
-const collection = "people";
+const collection = "todos";
 
 
 router.get('/', (req, res) =>{
     
     findAll(collection)
     .then((d) => {
-        logger.info(`Requested all people entries`)
-        res.status(200).json(d)})
+        logger.info('Received a list request for ToDos');
+        res.status(200).json(d)
+    })
     .catch((err) => {
         logger.error(err)
-        res.status(404).json(err)})
+        res.status(404).json(err)
+    })
 
 })
 
@@ -26,8 +27,9 @@ router.get('/:uuid', (req, res) =>{
     
     findOne(collection, req.params.uuid)
     .then((d) => {
-        logger.info(`Requested Details about person ${req.params.uuid}`)
-        res.status(200).json(d)})
+        logger.info(`Received a request for Todo ${req.params.uuid}`);
+        res.status(200).json(d)
+    })
     .catch((err) => {
         logger.error(err)
         res.status(404).json(err)})
@@ -35,43 +37,52 @@ router.get('/:uuid', (req, res) =>{
 })
 
 router.post('/', async (req, res) =>{
-    
+   
     try {
-        const value = await personSchema.validateAsync(req.body)
+    const value = await todoSchema.validateAsync(req.body)
 
-        let firstName = value.firstName, 
-        lastName = value.lastName || "",
-        nickName = value.nickName || value.firstName,
-        dob = date.format(new Date(value.dob), pattern) || "",
-        email = value.email || ""
-    
-        let person = new Person(firstName, lastName, nickName, dob, email)
-        console.log(person);
-    
-        write(collection, person )
+
+    let subject = req.body.subject, 
+    creator = req.body.creator || "Unknown", 
+    deadline = req.body.deadline, 
+    fullDay = req.body.fullDay || false , 
+    attendees = req.body.attendees || [], 
+    note = req.body.note || "", 
+    tags = req.body.tags || [],
+    important = req.body.important || false, 
+    created = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+
+        let todo = new Todo(subject, creator, deadline, fullDay, attendees, note, important,created , tags)
+
+        await write(collection, todo )
             .then( s => {
-                console.log(s);
-                logger.info(`created a new person ${JSON.stringify({s, person})}`);
-                res.status(200).json(person)
+                console.log(s)
+                logger.info(`created a new Todo ${JSON.stringify({s, todo})}`);
+
+                res.status(200).json({s, todo})
             })
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
-    }
+
+        }
 
     catch  (err) {
         logger.error(err)
         res.status(404).json(err.message)
     }
 
-})
+    }
+    
+)
 
 router.delete('/:uuid', (req, res) =>{
     
     deleteOne(collection, req.params.uuid)
     .then((d) => {
-        logger.info(`Deleted person ${req.params.uuid}`)
-        res.status(200).json(d)})
+        logger.info(`Deleted todo ${req.params.uuid}`)
+        res.status(200).json(d)
+    })
     .catch((err) => {
         logger.error(err)
         res.status(404).json(err)})
@@ -84,7 +95,7 @@ router.patch('/:uuid', (req, res) =>{
 
     patchOne(collection, req.params.uuid, req.body)
     .then((d) => {
-        logger.info(`Updated person ${req.params.uuid}`)
+        logger.info(`Updated Todo ${req.params.uuid}`)
         res.status(200).json(d)})
     .catch((err) => {
         logger.error(err)

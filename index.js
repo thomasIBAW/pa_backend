@@ -1,7 +1,8 @@
 import express from 'express';
 import calendarRouter from './routes/calendarRoutes.js';
 import peopleRouter from './routes/peopleRoutes.js';
-import tagsRouter from './routes/tagsRoutes.js';
+import tagsRouter from './routes/todoRoutes.js';
+import todosRouter from './routes/todoRoutes.js';
 import {logger} from './middlewares/loggers.js'
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use('/calendar', calendarRouter)
 app.use('/people', peopleRouter)
 app.use('/tags', tagsRouter)
+app.use('/todos', todosRouter)
 
 
 // API Error handling (express middleware)
