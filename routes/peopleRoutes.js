@@ -2,6 +2,7 @@ import express from "express";
 import {Person} from '../classes/classes.js';
 import {logger} from '../middlewares/loggers.js'
 import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
+import { personSchema } from "../classes/schemas.js";
 import date from 'date-and-time';
 
 const router = express.Router();
@@ -32,19 +33,20 @@ router.get('/:uuid', (req, res) =>{
     
 })
 
-router.post('/', (req, res) =>{
+router.post('/', async (req, res) =>{
     
-    let firstName = req.body.firstName, 
-    lastName = req.body.lastName || "",
-    nickName = req.body.nickName || req.body.firstName,
-    dob = req.body.dob || "",
-    email = req.body.email || ""
+    try {
+        const value = await personSchema.validateAsync(req.body)
 
-    if (!firstName) return res.status(400).json('Firstname is missing');
-    else {
+        let firstName = value.firstName, 
+        lastName = value.lastName || "",
+        nickName = value.nickName || value.firstName,
+        dob = value.dob || "",
+        email = value.email || ""
+    
         let person = new Person(firstName, lastName, nickName, dob, email)
         console.log(person);
-
+    
         write(collection, person )
             .then( s => {
                 console.log(s);
@@ -54,8 +56,14 @@ router.post('/', (req, res) =>{
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
-        }
-    })
+    }
+
+    catch  (err) {
+        logger.error(err)
+        res.status(404).json(err.message)
+    }
+
+})
 
 router.delete('/:uuid', (req, res) =>{
     

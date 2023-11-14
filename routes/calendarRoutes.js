@@ -3,6 +3,7 @@ import {Appointment} from '../classes/classes.js';
 import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
+import { calendarSchema } from "../classes/schemas.js";;
 
 const router = express.Router();
 const collection = "appointments";
@@ -36,7 +37,11 @@ router.get('/:uuid', (req, res) =>{
 })
 
 router.post('/', async (req, res) =>{
-    
+   
+    try {
+    const value = await calendarSchema.validateAsync(req.body)
+
+
     let subject = req.body.subject, 
     creator = req.body.creator || "Unknown", 
     dateTimeStart = req.body.dateTimeStart, 
@@ -46,12 +51,8 @@ router.post('/', async (req, res) =>{
     note = req.body.note || "", 
     tags = req.body.tags || [],
     important = req.body.important || false, 
-    created = date.format(new Date(), 'DD.MM.YYYY - HH:MM')
+    created = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-    if (!subject) return res.status(400).json('Subject is missing');
-    if (!dateTimeEnd) return res.status(400).json('End Date is missing');
-    if (!dateTimeStart) return res.status(400).json('Start Date is missing');
-    else {
         let appointment = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
         // console.log(appointment);
 
@@ -67,7 +68,14 @@ router.post('/', async (req, res) =>{
                 res.status(404).json(err)})
 
         }
+
+    catch  (err) {
+        logger.error(err)
+        res.status(404).json(err.message)
     }
+
+    }
+    
 )
 
 router.delete('/:uuid', (req, res) =>{

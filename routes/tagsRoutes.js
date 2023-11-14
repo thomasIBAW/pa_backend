@@ -3,6 +3,7 @@ import {Tag} from '../classes/classes.js';
 import {logger} from '../middlewares/loggers.js'
 import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
 import { verifyToken } from "../middlewares/middlewares.js";
+import { tagsSchema } from "../classes/schemas.js";
 
 import date from 'date-and-time';
 
@@ -33,8 +34,10 @@ router.get('/:uuid', (req, res) =>{
     
 })
 
-router.post('/',  (req, res) =>{
-    
+router.post('/', async (req, res) =>{
+    try{
+    const value = await tagsSchema.validateAsync(req.body)
+
     let tagName = req.body.tagName, 
     tagColor = req.body.tagColor || ""
 
@@ -52,8 +55,13 @@ router.post('/',  (req, res) =>{
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
+            }
         }
-    })
+        catch (err) {
+            logger.error(err)
+            res.status(404).json(err.message)
+        }
+    });
 
 router.delete('/:uuid', (req, res) =>{
     
