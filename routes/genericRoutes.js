@@ -40,14 +40,18 @@ router.post('/api/:coll/find', (req, res) =>{
     const token = req.headers.api_key
 
     jwt.verify(token, secret, function(err, decoded) {
-
         if (err) {
-            console.error('Error during token verification:', err);
+            logger.error('Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
         }
         if (decoded) {
             console.log('Endpoint Authenticated successful! user: ', decoded.username);
             logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
+
+            //if user is not Admin, restrict search to only Familyrelated results
+            if (!decoded.isAdmin) body.linkedFamily = decoded.linkedFamily;
+
+            console.log(body)
 
             findSome(collection, body)
                 .then((d) => {
@@ -64,13 +68,7 @@ router.post('/api/:coll/find', (req, res) =>{
             logger.error(`User <${username}> - Authentication failed - Wrong token!`)
             res.status(401).json('Authentication failed.');
         }
-
-
     });
-
-
-
-
 })
 
 router.post('/api/:coll', async (req, res) =>{
