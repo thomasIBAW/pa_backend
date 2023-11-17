@@ -1,9 +1,9 @@
 import express from "express";
-import {Appointment} from '../classes/classes.js';
-import { write, findAll, findOne, deleteOne , patchOne} from "../connectors/dbConnector.js";
-import {logger} from '../middlewares/loggers.js'
+import {Appointment} from '../../classes/classes.js';
+import {write, findAll, findOne, deleteOne, patchOne, findSome} from "../../connectors/dbConnector.js";
+import {logger} from '../../middlewares/loggers.js'
 import date from 'date-and-time';
-import { calendarSchema } from "../classes/schemas.js";;
+import { calendarSchema } from "../../classes/schemas.js";;
 
 const router = express.Router();
 const collection = "appointments";
@@ -22,6 +22,24 @@ router.get('/', (req, res) =>{
     })
 
 })
+
+// Endpoint to filter by any Data as array
+router.post('/filter', (req, res) =>{
+    //if (typeof (req.params.filterArray) != 'object') {throw new Error('Not an Array')}
+    const body = req.body
+    console.log(body)
+    findSome(collection, body)
+        .then((d) => {
+            logger.info('Received a list request for appointments');
+            res.status(200).json(d)
+        })
+        .catch((err) => {
+            logger.error(err)
+            res.status(404).json(err)
+        })
+
+})
+
 
 router.get('/:uuid', (req, res) =>{
     
