@@ -38,6 +38,21 @@ export class Person {
     }
 }
 
+export class User {
+    constructor(username,password, remember, isAdmin, isFamilyAdmin,linkedPerson, linkedFamily, created, email){
+        this.username = username
+        this.password = password
+        this.remember = remember
+        this.isAdmin = isAdmin
+        this.isFamilyAdmin = isFamilyAdmin
+        this.linkedPerson = linkedPerson
+        this.linkedFamily = linkedFamily
+        this.email = email
+        this.created = created
+        this.uuid = uuid()
+    }
+}
+
 export class Tag {
     constructor(name, color){
         this.tagName = name

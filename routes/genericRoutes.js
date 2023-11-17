@@ -1,10 +1,14 @@
 import express from "express";
-import {Appointment, Person, Tag, Todo} from '../classes/classes.js';
+import {Appointment, Person, Tag, Todo, User} from '../classes/classes.js';
 import {write, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
-import { calendarSchema, personSchema, tagsSchema, todoSchema } from "../classes/schemas.js";
+import bcrypt from "bcrypt";
+import jwt from 'jsonwebtoken';
+const secret = "yourSecretString"  // to be removed!
+import { calendarSchema, personSchema, tagsSchema, todoSchema , userSchema} from "../classes/schemas.js";
 
+const saltRounds = 10;
 const router = express.Router();
 let collection = "";
 
@@ -23,28 +27,53 @@ function setCollection(x) {
             case ('todos') :
                 collection = 'todos';
                 break;
+            case ('users') :
+                collection = 'users';
+                break;
         }
     }
 
 // Endpoint to filter by any Data as array
-router.post('/:coll/find', (req, res) =>{
+router.post('/api/:coll/find', (req, res) =>{
     setCollection(req.params.coll);
-
     const body = req.body
-    console.log(body)
-    findSome(collection, body)
-        .then((d) => {
-            logger.info('Received a list request for appointments');
-            res.status(200).json(d)
-        })
-        .catch((err) => {
-            logger.error(err)
-            res.status(404).json(err)
-        })
+    const token = req.headers.api_key
+
+    jwt.verify(token, secret, function(err, decoded) {
+
+        if (err) {
+            console.error('Error during token verification:', err);
+            return res.status(500).json('Error during token verification.');
+        }
+        if (decoded) {
+            console.log('Endpoint Authenticated successful! user: ', decoded.username);
+            logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
+
+            findSome(collection, body)
+                .then((d) => {
+                    logger.info('Received a list request for appointments');
+                    res.status(200).json(d)
+                })
+                .catch((err) => {
+                    logger.error(err)
+                    res.status(404).json(err)
+                })
+
+        }
+        else {
+            logger.error(`User <${username}> - Authentication failed - Wrong token!`)
+            res.status(401).json('Authentication failed.');
+        }
+
+
+    });
+
+
+
 
 })
 
-router.post('/:coll', async (req, res) =>{
+router.post('/api/:coll', async (req, res) =>{
     setCollection(req.params.coll);
 
     try {
@@ -104,14 +133,33 @@ router.post('/:coll', async (req, res) =>{
 
                 val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
                 break;
+
+            case ('users') :
+                const user = await userSchema.validateAsync(req.body);
+                let username = user.username,
+                    useremail = user.email || "",
+                    password = user.password, //to by bcrypted
+                    remember = user.remember || false ,
+                    isAdmin = user.isAdmin || false,
+                    isFamilyAdmin = user.isFamilyAdmin || false,
+                    linkedPerson = user.linkedPerson || "",
+                    linkedFamily = user.linkedFamily || "",
+                    created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+
+                const hash = bcrypt.hashSync(password, saltRounds);
+                console.log(hash)
+                val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
+                console.log(val)
+                break;
         }
 
         await write(collection, val )
             .then( s => {
                 console.log(s)
-                logger.info(`created a new appointment ${JSON.stringify({s, val})}`);
+                logger.info(`created a new user ${JSON.stringify({s, val})}`);
 
                 res.status(200).json({s, val})
+
             })
             .catch((err) => {
                 logger.error(err)
@@ -128,7 +176,7 @@ router.post('/:coll', async (req, res) =>{
     
 )
 
-router.delete('/:coll/:uuid', (req, res) =>{
+router.delete('/api/:coll/:uuid', (req, res) =>{
     setCollection(req.params.coll);
 
     deleteOne(collection, req.params.uuid)
@@ -142,7 +190,7 @@ router.delete('/:coll/:uuid', (req, res) =>{
     
 })
 
-router.patch('/:coll/:uuid', (req, res) =>{
+router.patch('/api/:coll/:uuid', (req, res) =>{
     setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json('Missing body...')
@@ -156,6 +204,8 @@ router.patch('/:coll/:uuid', (req, res) =>{
         res.status(404).json(err)})
     
 })
+
+
 
 
 export default router

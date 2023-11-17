@@ -1,13 +1,17 @@
 import express from 'express';
 import {logger} from './middlewares/loggers.js'
 import genericRoutes from "./routes/genericRoutes.js";
+import loginRoutes from "./routes/login.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const port = 3005;
 
 app.use(express.json());
-app.use(genericRoutes)
+app.use(cookieParser())
 
+app.use(genericRoutes);
+app.use('/login', loginRoutes)
 // API Error handling (express middleware)
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {

@@ -25,6 +25,28 @@ export const personSchema = Joi.object({
         .email()
 });
 
+export const userSchema = Joi.object({
+    username: Joi.string()
+        .alphanum()
+        .min(3)
+        .max(30)
+        .required(),
+    email: Joi.string()
+        .email(),
+    password: Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]{3,60}$')),
+    repeat_password: Joi.ref('password'),
+    remember: Joi.boolean(),
+    linkedPerson: Joi.string(),
+    linkedFamily: Joi.string(),
+    isAdmin: Joi.boolean(),
+    isFamilyAdmin : Joi.boolean()
+})
+    .xor('password', 'access_token')
+    .with('password', 'repeat_password');
+
+
+
 export const calendarSchema = Joi.object({
     subject: Joi.string()
         .min(3)
