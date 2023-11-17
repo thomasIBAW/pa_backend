@@ -27,7 +27,6 @@ export const personSchema = Joi.object({
 
 export const calendarSchema = Joi.object({
     subject: Joi.string()
-        .alphanum()
         .min(3)
         .max(30)
         .required(),
@@ -42,13 +41,14 @@ export const calendarSchema = Joi.object({
     attendees: Joi.array(),
     tags: Joi.array(),
     note: Joi.string()
-        .alphanum(),
+        .max(150),
     fullDay: Joi.boolean(),
     important: Joi.boolean()
 });
 
 export const tagsSchema = Joi.object({
     tagName: Joi.string()
+        .alphanum()
         .min(3)
         .max(15)
         .required(),
