@@ -59,6 +59,13 @@ export class Tag {
         this.tagColor = color
         this.uuid = uuid()
     }
+
+}export class Family {
+    constructor(familyName, familyColor){
+        this.familyName = familyName
+        this.familyColor = familyColor
+        this.uuid = uuid()
+    }
 }
 
 export class Todo {

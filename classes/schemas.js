@@ -45,8 +45,6 @@ export const userSchema = Joi.object({
     .xor('password', 'access_token')
     .with('password', 'repeat_password');
 
-
-
 export const calendarSchema = Joi.object({
     subject: Joi.string()
         .min(3)
@@ -76,6 +74,17 @@ export const tagsSchema = Joi.object({
         .required(),
     tagColor: Joi.string()
         .pattern(/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/)
+
+});
+
+export const familySchema = Joi.object({
+    familyName: Joi.string()
+        .min(3)
+        .max(15)
+        .required(),
+    familyColor: Joi.string()
+        .pattern(/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/),
+    createdBy : Joi.string()
 });
 
 export const todoSchema = Joi.object({

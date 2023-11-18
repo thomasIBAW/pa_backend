@@ -39,8 +39,7 @@ export async function findAll(coll) {
   return findResult;
 }
 
-export async function findSome(coll, filter) {
-
+export async function findSome(coll, filter)  {
   // Use connect method to connect to the server
   await client.connect();
   //console.log('Connected successfully to server');
@@ -49,10 +48,10 @@ export async function findSome(coll, filter) {
   const collection = db.collection(coll);
 
   const findResult = await collection.find(filter).sort({dateTimeStart:1}).project({_id:0}).toArray();
-  //console.log('Found documents =>', findResult);
 
   return findResult;
 }
+
 
 export async function findOne(coll, uuid) {
 

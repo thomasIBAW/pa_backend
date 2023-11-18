@@ -14,6 +14,8 @@ const collection = "todos";
 router.post('/', (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
+        console.log(username, password)
+
         findSome('users', {"username" : username} )
             .then((user)=> {
                 if (user.length === 0) {
@@ -31,7 +33,7 @@ router.post('/', (req, res) => {
 
                 if (result) {
                     console.log('Authentication successful!');
-                    logger.info(`User <${user.username}> successfully Authenticated!`)
+                    logger.info(`User <${user.username}> <${user.uuid}>successfully Authenticated!`)
 
                     jwt.sign({
                         username: user.username,
@@ -39,6 +41,7 @@ router.post('/', (req, res) => {
                         isAdmin: user.isAdmin,
                         isFamilyAdmin: user.isFamilyAdmin,
                         linkedPerson: user.linkedPerson,
+                        userUuid: user.uuid,
                         linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
                     function(err, token) {
 
