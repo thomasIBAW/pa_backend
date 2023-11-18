@@ -52,7 +52,6 @@ export async function findSome(coll, filter)  {
   return findResult;
 }
 
-
 export async function findOne(coll, uuid) {
 
   // Use connect method to connect to the server

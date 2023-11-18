@@ -4,16 +4,19 @@ import {write, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js
 import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
+import jwt, {decode} from 'jsonwebtoken';
 const secret = "yourSecretString"  // to be removed!
+const pattern = date.compile('DD.MM.YYYY')
+
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
+import {Collection} from "mongodb";
+import {getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
 
 const saltRounds = 10;
 const router = express.Router();
 let collection = "";
 
 function setCollection(x) {
-        console.log(x)
         switch (x) {
             case ('calendar') :
                 collection = 'appointments';
@@ -52,7 +55,10 @@ router.post('/api/:coll/find', (req, res) =>{
             logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
 
             //if user is not Admin, restrict search to only Familyrelated results
-            if (!decoded.isAdmin) body.linkedFamily = decoded.linkedFamily;
+            if (!decoded.isAdmin) {
+                if(decoded.linkedFamily) body.linkedFamily = decoded.linkedFamily
+                body.createdBy = decoded.createdBy
+            }
 
             console.log(body)
 
@@ -74,26 +80,45 @@ router.post('/api/:coll/find', (req, res) =>{
     });
 })
 
-router.post('/api/:coll', async (req, res) =>{
+// Endpoint to create a new item
+router.post('/api/:coll', getFamilyCheck, verifyJWTToken, async (req, res) =>{
+
     setCollection(req.params.coll);
 
     const body = req.body
-    const token = req.headers.api_key
+    const session_familyUuid = req.headers.family_uuid
+    let isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
 
-    jwt.verify(token, secret, async function(err, decoded) {
-        if (err) {
-            logger.error('Error during token verification:', err);
-            return res.status(500).json('Error during token verification.');
-        }
-        if (decoded) {
-            console.log('Endpoint Authenticated successful! user: ', decoded.username);
-            logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
-            const creator = decoded.uuid
-            //if user is not Admin, restrict search to only Family related results
-            //    if (!decoded.isAdmin) body.linkedFamily = decoded.linkedFamily;
-            console.log(creator)
-            // Code to be executed here:
-        console.log('received Body',body, ' for collection: ', collection)
+    // if (req.familyAdmin.filter(decoded.userUuid)) {
+    //     logger.error(`User ${decoded.username} is not admin.`);
+    //     return res.status(401).json(`User ${decoded.username} is not admin.`);
+    // }
+
+    // jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
+    //     if (err) {
+    //         logger.error('Error during token verification:', err);
+    //         return res.status(500).json('Error during token verification.');
+    //     }
+    //     if (decoded) {
+    //         console.log('Endpoint Authenticated successful! user: ', decoded.username);
+    //         logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
+    //
+    //         //if user is not Admin, restrict to only FamilyAdmin users
+    //         if (!decoded.isAdmin) {
+    //             console.log(foundFamily, foundFamilyAdmins)
+    //             if (!foundFamilyAdmins.filter(decoded.userUuid)) {
+    //                 logger.error(`User ${decoded.username} is not admin in ${foundFamily.familyName}`);
+    //                 return res.status(401).json(`User ${decoded.username} is not admin in ${foundFamily.familyName}`);
+    //             }
+    //         }
+    //         console.log(`My user uuid: ${decoded.userUuid}. All Admins in Family ${req.headers.family_uuid} (${foundFamily.familyName}) are: ${JSON.stringify(foundFamily.familyAdmin)}`)
+    //         // Code to be executed here:
+
+    console.log(`Family Admins for the current Family are: ${req.familyAdmin}`)
+    console.log(`Currently Authenticated user is ${req.decoded.username} (isAdmin=${req.decoded.isAdmin}) / (isFamilyAdmin= ${isUserFamilyAdmin})`)
+
+    console.log('received Body',body, ' for collection: ', collection)
+
             try {
                 let val = {};
                 switch (req.params.coll) {
@@ -124,6 +149,14 @@ router.post('/api/:coll', async (req, res) =>{
                             email = person.email || ""
 
                         val = new Person(firstName, lastName, nickName, dob, email)
+
+                        //Add current family to Persona
+                        val.linkedFamily = session_familyUuid
+
+                        // if (!decoded.isAdmin && !decoded.isFamilyAdmin) {
+                        //     logger.error('Not an Admin. Cannot create persona')
+                        //     return res.status(401).json('Not an Admin. Cannot create persona')
+                        // }
                         break;
                     case ('tags') :
                         const tag = await tagsSchema.validateAsync(req.body)
@@ -142,7 +175,10 @@ router.post('/api/:coll', async (req, res) =>{
                             familyColor = fam.familyColor || ""
 
                         val = new Family(familyName,familyColor)
-                        // console.log(val)
+
+                        val.familyAdmin = [decoded.userUuid]
+                        val.familyMember = [decoded.userUuid]
+
                         break;
                     case ('todos') :
 
@@ -159,6 +195,9 @@ router.post('/api/:coll', async (req, res) =>{
                             created1 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
                         val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
+
+
+
                         break;
                     case ('users') :
                         const user = await userSchema.validateAsync(req.body);
@@ -179,13 +218,12 @@ router.post('/api/:coll', async (req, res) =>{
                         break;
                 }
 
-                val.createdBy = decoded.userUuid;
-
+                val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
                 await write(collection, val )
                     .then( s => {
                         console.log(s)
-                        logger.info(`created a new user ${JSON.stringify({s, val})}`);
+                        logger.info(`created a new item in ${collection} by user <${decoded.username}>: ${JSON.stringify(val)}`);
 
                         res.status(200).json({s, val})
 
@@ -202,21 +240,22 @@ router.post('/api/:coll', async (req, res) =>{
             }
 
             // end of the code to be executed
-        }
-        else {
-            logger.error(`User <${username}> - Authentication failed - Wrong token!`)
-            res.status(401).json('Authentication failed.');
-        }
-    });
+
+        // else {
+        //     logger.error(`User <${decoded.username}> - Authentication failed - Wrong token!`)
+        //     res.status(401).json(`User <${decoded.username}> - Authentication failed - Wrong token!`);
+        // }
+
 
 });
 
+// Endpoint to delete an item
 router.delete('/api/:coll/:uuid', (req, res) =>{
     setCollection(req.params.coll);
 
     deleteOne(collection, req.params.uuid)
     .then((d) => {
-        logger.info(`Deleted appointment ${req.params.uuid}`)
+        logger.warning(`Deleted from collection ${collection} entry: ${req.params.uuid} by: ...tbc`)
         res.status(200).json(d)
     })
     .catch((err) => {
@@ -225,6 +264,7 @@ router.delete('/api/:coll/:uuid', (req, res) =>{
     
 })
 
+// Endpoint to Update am item
 router.patch('/api/:coll/:uuid', (req, res) =>{
     setCollection(req.params.coll);
 
@@ -232,15 +272,13 @@ router.patch('/api/:coll/:uuid', (req, res) =>{
 
     patchOne(collection, req.params.uuid, req.body)
     .then((d) => {
-        logger.info(`Updted appointment ${req.params.uuid}`)
+        logger.warning(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
         res.status(200).json(d)})
     .catch((err) => {
         logger.error(err)
         res.status(404).json(err)})
     
 })
-
-
 
 
 export default router
