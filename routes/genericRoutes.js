@@ -87,165 +87,136 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, async (req, res) =>{
 
     const body = req.body
     const session_familyUuid = req.headers.family_uuid
-    let isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
-
-    // if (req.familyAdmin.filter(decoded.userUuid)) {
-    //     logger.error(`User ${decoded.username} is not admin.`);
-    //     return res.status(401).json(`User ${decoded.username} is not admin.`);
-    // }
-
-    // jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
-    //     if (err) {
-    //         logger.error('Error during token verification:', err);
-    //         return res.status(500).json('Error during token verification.');
-    //     }
-    //     if (decoded) {
-    //         console.log('Endpoint Authenticated successful! user: ', decoded.username);
-    //         logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
-    //
-    //         //if user is not Admin, restrict to only FamilyAdmin users
-    //         if (!decoded.isAdmin) {
-    //             console.log(foundFamily, foundFamilyAdmins)
-    //             if (!foundFamilyAdmins.filter(decoded.userUuid)) {
-    //                 logger.error(`User ${decoded.username} is not admin in ${foundFamily.familyName}`);
-    //                 return res.status(401).json(`User ${decoded.username} is not admin in ${foundFamily.familyName}`);
-    //             }
-    //         }
-    //         console.log(`My user uuid: ${decoded.userUuid}. All Admins in Family ${req.headers.family_uuid} (${foundFamily.familyName}) are: ${JSON.stringify(foundFamily.familyAdmin)}`)
-    //         // Code to be executed here:
-
+    if (req.params.coll !== "family" && req.params.coll !== "users") {
+        let isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
+    }
     console.log(`Family Admins for the current Family are: ${req.familyAdmin}`)
-    console.log(`Currently Authenticated user is ${req.decoded.username} (isAdmin=${req.decoded.isAdmin}) / (isFamilyAdmin= ${isUserFamilyAdmin})`)
 
-    console.log('received Body',body, ' for collection: ', collection)
+    if (req.params.coll !== "family" && req.params.coll !== "users") {
+        console.log(`Currently Authenticated user is ${req.decoded.username} (isAdmin=${req.decoded.isAdmin}) / (isFamilyAdmin= ${isUserFamilyAdmin})`)
+    }
+        console.log('received Body',body, ' for collection: ', collection)
 
-            try {
-                let val = {};
-                switch (req.params.coll) {
-                    case ('calendar') :
-                        const calendar = await calendarSchema.validateAsync(req.body)
+    try {
+        let val = {};
+        switch (req.params.coll) {
+            case ('calendar') :
+                const calendar = await calendarSchema.validateAsync(req.body)
 
-                        let subject = calendar.subject,
-                            creator = calendar.creator || "Unknown",
-                            dateTimeStart = calendar.dateTimeStart,
-                            dateTimeEnd = calendar.dateTimeEnd,
-                            fullDay = calendar.fullDay || false ,
-                            attendees = calendar.attendees || [],
-                            note = calendar.note || "",
-                            tags = calendar.tags || [],
-                            important = calendar.important || false,
-                            created = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+                let subject = calendar.subject,
+                    creator = calendar.creator || "Unknown",
+                    dateTimeStart = calendar.dateTimeStart,
+                    dateTimeEnd = calendar.dateTimeEnd,
+                    fullDay = calendar.fullDay || false ,
+                    attendees = calendar.attendees || [],
+                    note = calendar.note || "",
+                    tags = calendar.tags || [],
+                    important = calendar.important || false,
+                    created = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-                        val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
+                val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
 
-                        break;
-                    case ('people') :
-                        let person = await personSchema.validateAsync(req.body)
+                break;
+            case ('people') :
+                let person = await personSchema.validateAsync(req.body)
 
-                        let firstName = person.firstName,
-                            lastName = person.lastName || "",
-                            nickName = person.nickName || value.firstName,
-                            dob = date.format(new Date(person.dob), pattern) || "",
-                            email = person.email || ""
+                let firstName = person.firstName,
+                    lastName = person.lastName || "",
+                    nickName = person.nickName || value.firstName,
+                    dob = date.format(new Date(person.dob), pattern) || "",
+                    email = person.email || ""
 
-                        val = new Person(firstName, lastName, nickName, dob, email)
+                val = new Person(firstName, lastName, nickName, dob, email)
 
-                        //Add current family to Persona
-                        val.linkedFamily = session_familyUuid
+                //Add current family to Persona
+                val.linkedFamily = session_familyUuid
 
-                        // if (!decoded.isAdmin && !decoded.isFamilyAdmin) {
-                        //     logger.error('Not an Admin. Cannot create persona')
-                        //     return res.status(401).json('Not an Admin. Cannot create persona')
-                        // }
-                        break;
-                    case ('tags') :
-                        const tag = await tagsSchema.validateAsync(req.body)
+                // if (!decoded.isAdmin && !decoded.isFamilyAdmin) {
+                //     logger.error('Not an Admin. Cannot create persona')
+                //     return res.status(401).json('Not an Admin. Cannot create persona')
+                // }
+                break;
+            case ('tags') :
+                const tag = await tagsSchema.validateAsync(req.body)
 
-                        let tagName = tag.tagName,
-                            tagColor = tag.tagColor || ""
+                let tagName = tag.tagName,
+                    tagColor = tag.tagColor || ""
+                val = new Tag(tagName,tagColor)
+                break;
+            case ('family') :
+                const fam = await familySchema.validateAsync(req.body)
+                // console.log( 'validates: ', fam)
 
-                        val = new Tag(tagName,tagColor)
+                let familyName = fam.familyName,
+                    familyColor = fam.familyColor || ""
 
-                        break;
-                    case ('family') :
-                        const fam = await familySchema.validateAsync(req.body)
-                        // console.log( 'validates: ', fam)
+                val = new Family(familyName,familyColor)
 
-                        let familyName = fam.familyName,
-                            familyColor = fam.familyColor || ""
+                val.familyAdmin = [decoded.userUuid]
+                val.familyMember = [decoded.userUuid]
 
-                        val = new Family(familyName,familyColor)
+                break;
+            case ('todos') :
 
-                        val.familyAdmin = [decoded.userUuid]
-                        val.familyMember = [decoded.userUuid]
+                const to = await todoSchema.validateAsync(req.body);
 
-                        break;
-                    case ('todos') :
+                let subject1 = to.subject,
+                    creator1 = to.creator || "Unknown",
+                    deadline1 = to.deadline,
+                    fullDay1 = to.fullDay || false ,
+                    attendees1 = to.attendees || [],
+                    note1 = to.note || "",
+                    tags1 = to.tags || [],
+                    important1 = to.important || false,
+                    created1 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-                        const to = await todoSchema.validateAsync(req.body);
-
-                        let subject1 = to.subject,
-                            creator1 = to.creator || "Unknown",
-                            deadline1 = to.deadline,
-                            fullDay1 = to.fullDay || false ,
-                            attendees1 = to.attendees || [],
-                            note1 = to.note || "",
-                            tags1 = to.tags || [],
-                            important1 = to.important || false,
-                            created1 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
-
-                        val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
+                val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
 
 
 
-                        break;
-                    case ('users') :
-                        const user = await userSchema.validateAsync(req.body);
-                        let username = user.username,
-                            useremail = user.email || "",
-                            password = user.password, //to by bcrypted
-                            remember = user.remember || false ,
-                            isAdmin = user.isAdmin || false,
-                            isFamilyAdmin = user.isFamilyAdmin || false,
-                            linkedPerson = user.linkedPerson || "",
-                            linkedFamily = user.linkedFamily || "",
-                            created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+                break;
+            case ('users') :
+                const user = await userSchema.validateAsync(req.body);
+                let username = user.username,
+                    useremail = user.email || "",
+                    password = user.password, //to by bcrypted
+                    remember = user.remember || false ,
+                    isAdmin = user.isAdmin || false,
+                    isFamilyAdmin = user.isFamilyAdmin || false,
+                    linkedPerson = user.linkedPerson || "",
+                    linkedFamily = user.linkedFamily || "",
+                    created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-                        const hash = bcrypt.hashSync(password, saltRounds);
-                        console.log(hash)
-                        val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
-                        console.log(val)
-                        break;
-                }
+                const hash = bcrypt.hashSync(password, saltRounds);
+                console.log(hash)
+                val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
+                console.log(val)
+                break;
+        }
 
-                val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
+        if (req.params.coll !== "family" && req.params.coll !== "users") {
+            val.linkedFamily = req.headers.family_uuid
+        }
+        val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
-                await write(collection, val )
-                    .then( s => {
-                        console.log(s)
-                        logger.info(`created a new item in ${collection} by user <${decoded.username}>: ${JSON.stringify(val)}`);
+        await write(collection, val )
+            .then( s => {
+                console.log('Item created :',s)
+                logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
-                        res.status(200).json({s, val})
+                res.status(200).json({val})
 
-                    })
-                    .catch((err) => {
-                        logger.error(err)
-                        res.status(404).json(err)})
-
-            }
-
-            catch  (err) {
+            })
+            .catch((err) => {
                 logger.error(err)
-                res.status(404).json(err.message)
-            }
+                res.status(404).json(err)})
 
-            // end of the code to be executed
+    }
 
-        // else {
-        //     logger.error(`User <${decoded.username}> - Authentication failed - Wrong token!`)
-        //     res.status(401).json(`User <${decoded.username}> - Authentication failed - Wrong token!`);
-        // }
-
+    catch  (err) {
+        logger.error(err)
+        res.status(404).json(err.message)
+    }
 
 });
 

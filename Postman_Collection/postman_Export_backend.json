@@ -1,0 +1,1036 @@
+{
+	"info": {
+		"_postman_id": "a74522df-bff1-4f0f-8553-fe6353959cd3",
+		"name": "FamilyCalendar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7993739"
+	},
+	"item": [
+		{
+			"name": "Create Items",
+			"item": [
+				{
+					"name": "Create tags",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tagName\":\"Schule\",\r\n  \"tagColor\":\"#e30b82\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tags",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create persona",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\":\"Thomas\",\r\n  \"lastName\":\"Beck\",\r\n  \"nickName\":\"Tom\",\r\n  \"dob\":\"17.04.1979\",\r\n  \"email\":\"mymail@mail.me\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/people",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"people"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Family",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"familyName\":\"BECK\"\r\n  }"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/family",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"family"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create todo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"Einkaufen Migros\",\r\n  \"creator\": \"Thomas\",\r\n  \"deadline\": \"2023-11-15T11:18:00.186Z\",\r\n  \"attendees\": [],\r\n  \"note\": \"Siehe Bring!\",\r\n  \"fullDay\": false,\r\n  \"important\": true,\r\n  \"tags\": []\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/todos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"Test\",\r\n  \"creator\": \"Thomas\",\r\n  \"dateTimeStart\": \"2023-11-13T10:18:00.186Z\",\r\n  \"dateTimeEnd\": \"2023-11-13T15:18:00.186Z\",\r\n  \"attendees\": [],\r\n  \"tags\": [],\r\n  \"note\": \"none\",\r\n  \"fullDay\": false,\r\n  \"important\": true\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/calendar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"calendar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Find Items",
+			"item": [
+				{
+					"name": "find todos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/todos/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"todos",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find tags",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tags/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tags",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find people",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/people/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"people",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find appointments",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/calendar/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"calendar",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find families",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/family/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"family",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "find users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/find",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"find"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "login - get Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);\r",
+									"// pm.environment.set(\"newest_token\", jsonData);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"martin\",\r\n    \"password\": \"941519\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Signup - Create User",
+			"item": [
+				{
+					"name": "Create user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"martin\",\r\n  \"email\": \"tbe@pm.me\",\r\n  \"password\": \"941519\",\r\n  \"repeat_password\": \"941519\",\r\n  \"remember\": true,\r\n  \"isAdmin\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Update Items",
+			"item": [
+				{
+					"name": "Update tags",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tagName\":\"Schule\",\r\n  \"tagColor\":\"#e30b82\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tags/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tags",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update persona",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\":\"Thomas\",\r\n  \"lastName\":\"Beck\",\r\n  \"nickName\":\"Tom\",\r\n  \"dob\":\"17.04.1979\",\r\n  \"email\":\"mymail@mail.me\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/people/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"people",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update todo",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"Einkaufen Migros\",\r\n  \"creator\": \"Thomas\",\r\n  \"deadline\": \"2023-11-15T11:18:00.186Z\",\r\n  \"attendees\": [],\r\n  \"note\": \"Siehe Bring!\",\r\n  \"fullDay\": false,\r\n  \"important\": true,\r\n  \"tags\": []\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/todos/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"todos",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPdate Appointment",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"Test\",\r\n  \"creator\": \"Thomas\",\r\n  \"dateTimeStart\": \"2023-11-13T10:18:00.186Z\",\r\n  \"dateTimeEnd\": \"2023-11-13T15:18:00.186Z\",\r\n  \"attendees\": [],\r\n  \"tags\": [],\r\n  \"note\": \"none\",\r\n  \"fullDay\": false,\r\n  \"important\": true\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/calendar/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"calendar",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update user",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"martin\",\r\n  \"email\": \"tbe@pm.me\",\r\n  \"password\": \"941519\",\r\n  \"repeat_password\": \"941519\",\r\n  \"remember\": true,\r\n  \"isAdmin\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete Items",
+			"item": [
+				{
+					"name": "Delete families",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/family/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"family",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete todos",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/todos/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"todos",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete tags",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tags/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tags",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete persona",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/people/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"people",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Appointment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/calendar/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"calendar",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "api_key",
+								"value": "{{api_key_thomas}}",
+								"type": "text"
+							},
+							{
+								"key": "family_uuid",
+								"value": "{{family_uuid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:uuid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":uuid"
+							],
+							"variable": [
+								{
+									"key": "uuid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

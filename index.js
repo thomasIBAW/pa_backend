@@ -13,13 +13,14 @@ app.use(cookieParser())
 
 app.use('/login', loginRoutes)
 
-app.post('/demo', getFamilyCheck, verifyJWTToken, (req, res) => {
+app.use(genericRoutes);
+
+//used to debug entrypoints and middlewares, not used in production
+/*app.post('/demo', getFamilyCheck, verifyJWTToken, (req, res) => {
     console.log(`Family Admins are: ${req.familyAdmin}`)
     console.log(`Authenticated user is ${req.decoded.username}`)
     res.status(200).json(`Family Admins are: ${req.familyAdmin}`)
-})
-
-app.use(genericRoutes);
+})*/
 
 // API Error handling (express middleware)
 app.use((err, req, res, next) => {
