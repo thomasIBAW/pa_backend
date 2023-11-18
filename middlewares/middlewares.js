@@ -7,28 +7,64 @@ const secret = "yourSecretString"  // to be removed!
 export async function getFamilyCheck (req, res, next) {
 
     if (req.params.coll !== 'users'){
+         await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
+            .then( (family) => {
 
-        // console.log('reached Middleware...')
-            await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
-                .then( (family) => {
+                if (family.length === 0) {
+                    logger.warning('No family found. Cannot create item')
+                    return res.status(401).json('No family found. Cannot create item')
+                }
+                else {
+                    req.familyAdmin = family[0].familyAdmin;
+                    next()
+                }
+            })
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)
+            })
+    } else next()
+}
 
-                    if (family.length === 0) {
-                        logger.warning('No family found. Cannot create item')
-                        return res.status(401).json('No family found. Cannot create item')
+export async function checkDuplicates (req, res, next) {
+    if (req.params.coll === 'users'){
+        // console.log('reached Middleware...', req.params.coll, req.body.username)
+            await findSome('users', { "username" : `${req.body.username}`} )
+                .then( (user) => {
+                    if (user.length === 0) {
+                        next()
                     }
                     else {
-                        req.familyAdmin = family[0].familyAdmin;
-                        next()
+                        console.log(user)
+                        logger.warn('Duplicated username. Cannot create item')
+                        return res.status(403).json('Duplicated username. Cannot create item')
                     }
                 })
                 .catch((err) => {
                     logger.error(err)
                     res.status(404).json(err)
                 })
-        } else next()
+        }
+    else if (req.params.coll === 'family'){
 
-
-    }
+        // console.log('reached Middleware...')
+        await findSome('family', { "familyName" : `${req.body.familyName}`} )
+            .then( (fam) => {
+                if (fam.length === 0) {
+                    next()
+                }
+                else {
+                    logger.warn('Duplicated familyname. Cannot create item')
+                    return res.status(403).json('Duplicated familyname. Cannot create item')
+                }
+            })
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)
+            })
+        }
+    else next()
+}
 export async function verifyJWTToken (req, res, next) {
 
     jwt.verify(req.headers.api_key, secret, async function(err, decoded) {

@@ -9,8 +9,7 @@ const secret = "yourSecretString"  // to be removed!
 const pattern = date.compile('DD.MM.YYYY')
 
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
-import {Collection} from "mongodb";
-import {getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+import {checkDuplicates, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
 
 const saltRounds = 10;
 const router = express.Router();
@@ -81,7 +80,7 @@ router.post('/api/:coll/find', (req, res) =>{
 })
 
 // Endpoint to create a new item
-router.post('/api/:coll', getFamilyCheck, verifyJWTToken, async (req, res) =>{
+router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async (req, res) =>{
 
     setCollection(req.params.coll);
 
