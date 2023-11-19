@@ -1,11 +1,28 @@
 import { createLogger, format, transports } from 'winston';
+// const myCustomLevels = {
+//     levels : {
+//         error: 0,
+//         info: 1,
+//         warn: 2,
+//         debug: 3
+//     },
+//     colors: {
+//             error: 'white redBG',
+//             info: 'orange',
+//             warn: 'blue',
+//             debug: 'black'
+//         }
+//     }
+
 
 export const logger = createLogger({
     level: 'info',
+    // levels: myCustomLevels.levels,
     format: format.combine(
         format.timestamp({
             format: 'DD.MM.YYYY HH:mm:ss'
         }),
+        // format.colorize(),
         format.errors({ stack: true }),
         format.splat(),
         format.json(),

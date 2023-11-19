@@ -4,15 +4,14 @@ import {write, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js
 import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 import bcrypt from "bcrypt";
-import jwt, {decode} from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
+import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+
 const secret = "yourSecretString"  // to be removed!
 const pattern = date.compile('DD.MM.YYYY')
-
-import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
-import {checkDuplicates, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
-
-const saltRounds = 10;
 const router = express.Router();
+const saltRounds = 10;
 let collection = "";
 
 function setCollection(x) {
@@ -38,68 +37,68 @@ function setCollection(x) {
         }
     }
 
-// Endpoint to filter by any Data (JSON)
-router.post('/api/:coll/find', (req, res) =>{
+// Endpoint to filter by any Data (JSON) passed as payload to the request.
+
+router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
     const body = req.body
-    const token = req.headers.api_key
+    const session_familyUuid = req.headers.family_uuid
 
-    jwt.verify(token, secret, function(err, decoded) {
-        if (err) {
-            logger.error('Error during token verification:', err);
-            return res.status(500).json('Error during token verification.');
+    /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family */
+    if (!req.decoded.isAdmin) {
+        if(req.isUserFamilyMember) {
+        body.linkedFamily = session_familyUuid
+        } else {
+            console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+            logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+            return res.status(401).json(`not a family member`)
         }
-        if (decoded) {
-            console.log('Endpoint Authenticated successful! user: ', decoded.username);
-            logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
+    }
 
-            //if user is not Admin, restrict search to only Familyrelated results
-            if (!decoded.isAdmin) {
-                if(decoded.linkedFamily) body.linkedFamily = decoded.linkedFamily
-                body.createdBy = decoded.createdBy
-            }
+    console.log('Searching for : ',body)
 
-            console.log(body)
+    findSome(collection, body)
+        .then((d) => {
+            logger.info('Received a list request for appointments');
+            res.status(200).json(d)
+        })
+        .catch((err) => {
+            logger.error(err)
+            res.status(404).json(err)
+        })
 
-            findSome(collection, body)
-                .then((d) => {
-                    logger.info('Received a list request for appointments');
-                    res.status(200).json(d)
-                })
-                .catch((err) => {
-                    logger.error(err)
-                    res.status(404).json(err)
-                })
 
-        }
-        else {
-            logger.error(`User <${username}> - Authentication failed - Wrong token!`)
-            res.status(401).json('Authentication failed.');
-        }
-    });
 })
 
 // Endpoint to create a new item
-router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async (req, res) =>{
+router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
 
     setCollection(req.params.coll);
 
-    const body = req.body
     const session_familyUuid = req.headers.family_uuid
-    if (req.params.coll !== "family" && req.params.coll !== "users") {
-        let isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
-    }
-    console.log(`Family Admins for the current Family are: ${req.familyAdmin}`)
 
-    if (req.params.coll !== "family" && req.params.coll !== "users") {
-        console.log(`Currently Authenticated user is ${req.decoded.username} (isAdmin=${req.decoded.isAdmin}) / (isFamilyAdmin= ${isUserFamilyAdmin})`)
-    }
-        console.log('received Body',body, ' for collection: ', collection)
+    /*console.log(`
+    Details about current API call: 
+    endpoint : ${req.params.coll}
+    logged in user: ${req.decoded.username}
+    (isAdmin : ${req.decoded.isAdmin}) 
+    (isFamilyAdmin : ${req.isUserFamilyAdmin})
+    (isFamilyMember : ${req.isUserFamilyMember})
+    Family name is : ${req.family.familyName}
+    FamilyUuid : ${session_familyUuid}
+    `)*/
 
     try {
         let val = {};
+
         switch (req.params.coll) {
-            case ('calendar') :
+            case 'calendar' :
+                if (!req.isUserFamilyMember) {
+                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    return res.status(401).json(`not a family member`)
+                }
+
                 const calendar = await calendarSchema.validateAsync(req.body)
 
                 let subject = calendar.subject,
@@ -116,7 +115,13 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async
                 val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
 
                 break;
-            case ('people') :
+            case 'people' :
+                if (!req.isUserFamilyMember) {
+                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    return res.status(401).json(`not a family member`)
+                }
+
                 let person = await personSchema.validateAsync(req.body)
 
                 let firstName = person.firstName,
@@ -135,14 +140,21 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async
                 //     return res.status(401).json('Not an Admin. Cannot create persona')
                 // }
                 break;
-            case ('tags') :
+            case 'tags' :
+
+                if (!req.isUserFamilyMember) {
+                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    return res.status(401).json(`not a family member`)
+                }
+
                 const tag = await tagsSchema.validateAsync(req.body)
 
                 let tagName = tag.tagName,
                     tagColor = tag.tagColor || ""
                 val = new Tag(tagName,tagColor)
                 break;
-            case ('family') :
+            case 'family' :
                 const fam = await familySchema.validateAsync(req.body)
                 // console.log( 'validates: ', fam)
 
@@ -155,7 +167,12 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async
                 val.familyMember = [decoded.userUuid]
 
                 break;
-            case ('todos') :
+            case 'todos' :
+                if (!req.isUserFamilyMember) {
+                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    return res.status(401).json(`not a family member`)
+                }
 
                 const to = await todoSchema.validateAsync(req.body);
 
@@ -174,7 +191,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async
 
 
                 break;
-            case ('users') :
+            case 'users' :
                 const user = await userSchema.validateAsync(req.body);
                 let username = user.username,
                     useremail = user.email || "",
@@ -191,28 +208,31 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkDuplicates, async
                 val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
                 console.log(val)
                 break;
+            case 'default' : {
+                res.status(404).json(`Not existing endpoint ${req.params.coll}`)
+            }
         }
 
-        if (req.params.coll !== "family" && req.params.coll !== "users") {
+        if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
             val.linkedFamily = req.headers.family_uuid
-        }
+            }
         val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
         await write(collection, val )
             .then( s => {
-                console.log('Item created :',s)
+                // console.log('Item created :',s)
+                console.log(`Created Item is ${JSON.stringify(val)}`)
                 logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
-                res.status(200).json({val})
+                res.status(200).json(val)
 
             })
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
 
-    }
-
-    catch  (err) {
+        }
+    catch (err) {
         logger.error(err)
         res.status(404).json(err.message)
     }
