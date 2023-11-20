@@ -19,4 +19,4 @@ Endpoint are listening on port `3005`
 tbc
 
 > [!NOTE]
-> Please see "Wiki" for documentation
+> Please see [wiki](https://github.com/TBEMSESG/pa_backend/wiki) for documentation
