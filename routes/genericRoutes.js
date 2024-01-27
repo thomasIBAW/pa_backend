@@ -7,8 +7,9 @@ import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
 import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+import "dotenv.config()"
 
-const secret = "yourSecretString"  // to be removed!
+const secret = process.env.mySecret || "yourSecretString"  // to be removed!
 const pattern = date.compile('DD.MM.YYYY')
 const router = express.Router();
 const saltRounds = 10;
@@ -191,23 +192,25 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
 
                 break;
-            case 'users' :
-                const user = await userSchema.validateAsync(req.body);
-                let username = user.username,
-                    useremail = user.email || "",
-                    password = user.password, //to by bcrypted
-                    remember = user.remember || false ,
-                    isAdmin = user.isAdmin || false,
-                    isFamilyAdmin = user.isFamilyAdmin || false,
-                    linkedPerson = user.linkedPerson || "",
-                    linkedFamily = user.linkedFamily || "",
-                    created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-                const hash = bcrypt.hashSync(password, saltRounds);
-                console.log(hash)
-                val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
-                console.log(val)
-                break;
+                //Users to be removed ans moved to signup router ... tbc
+            // case 'users' :
+            //     const user = await userSchema.validateAsync(req.body);
+            //     let username = user.username,
+            //         useremail = user.email || "",
+            //         password = user.password, //to be bcrypted
+            //         remember = user.remember || false ,
+            //         isAdmin = user.isAdmin || false,
+            //         isFamilyAdmin = user.isFamilyAdmin || false,
+            //         linkedPerson = user.linkedPerson || "",
+            //         linkedFamily = user.linkedFamily || "",
+            //         created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+            //
+            //     const hash = bcrypt.hashSync(password, saltRounds);
+            //     console.log(hash)
+            //     val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
+            //     console.log(val)
+            //     break;
             case 'default' : {
                 res.status(404).json(`Not existing endpoint ${req.params.coll}`)
             }

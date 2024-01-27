@@ -7,66 +7,56 @@
 
 
 import express from "express";
-import {write, findAll, findOne, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js";
+import {write} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import jwt from 'jsonwebtoken';
 import date from 'date-and-time';
-import { todoSchema } from "../classes/schemas.js";
+import {userSchema} from "../classes/schemas.js";
 import bcrypt from "bcrypt";
+import {User} from "../classes/classes.js";
 
 const secret = "yourSecretString" //to be set in Env variables
+const saltRounds = 10;
 
 const router = express.Router();
-const collection = "todos";
+const collection = "users";
 
-router.post('/', (req, res) => {
-    let username = req.body.username;
-    let password = req.body.password;
-        console.log(username, password)
+router.post('/', async (req, res) => {
 
-        findSome('users', {"username" : username} )
-            .then((user)=> {
-                if (user.length === 0) {
-                    logger.error(`User <${username}> not found!`)
-                    return res.status(404).send('User not found.');
-                }
-                user = user[0];
-                console.log(user)
+        let val = {}
 
-                bcrypt.compare( password , user.password, function (err, result) {
-                    if (err) {
-                        console.error('Error during password comparison:', err);
-                        return res.status(500).send('An error occurred.');
-                }
+        const user = await userSchema.validateAsync(req.body);
+        let username = user.username,
+            useremail = user.email || "",
+            password = user.password, //to be bcrypted
+            remember = user.remember || false,
+            isAdmin = user.isAdmin || false,
+            isFamilyAdmin = user.isFamilyAdmin || false,
+            linkedPerson = user.linkedPerson || "",
+            linkedFamily = user.linkedFamily || "",
+            created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
-                if (result) {
-                    console.log('Authentication successful!');
-                    logger.info(`User <${user.username}> <${user.uuid}>successfully Authenticated!`)
+        const hash = bcrypt.hashSync(password, saltRounds);
+        console.log(hash)
+        val = new User(username, hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2, useremail)
+        console.log(val)
 
-                    jwt.sign({
-                        username: user.username,
-                        remember: user.remember,
-                        isAdmin: user.isAdmin,
-                        isFamilyAdmin: user.isFamilyAdmin,
-                        linkedPerson: user.linkedPerson,
-                        userUuid: user.uuid,
-                        linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
-                    function(err, token) {
 
-                        res.status(200).send(token);
-                    }
-                    );
+        await write(collection, val)
+            .then(s => {
+                // console.log('Item created :',s)
+                console.log(`Created User is ${JSON.stringify(val)}`)
+                logger.info(`created a new User in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
-                }
-                else {
-                    logger.error(`User <${username}> - Authentication failed - Wrong Password!`)
-                    res.status(401).send('Authentication failed.');
-                }
+                res.status(200).json(val)
 
-            });
+            })
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)
+            })
 
-        })
 
-})
+    });
 
 export default router

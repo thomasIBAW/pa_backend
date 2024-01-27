@@ -4,9 +4,12 @@ import {logger} from '../middlewares/loggers.js'
 import jwt from 'jsonwebtoken';
 import date from 'date-and-time';
 import { todoSchema } from "../classes/schemas.js";
+import "dotenv.config()"
 import bcrypt from "bcrypt";
 
-const secret = "yourSecretString" //to be set in Env variables
+// secret needed to compare login password with the hash in the DB
+// Please change the secret to any random string in the .env file
+const secret = process.env.mySecret || "yourSecretString" //to be set in Env variables
 
 const router = express.Router();
 const collection = "todos";

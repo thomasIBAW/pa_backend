@@ -4,10 +4,11 @@ import genericRoutes from "./routes/genericRoutes.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
+import 'dotenv.config()'
 import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 
 const app = express();
-const port = 3005;
+const port = process.env.port || 3005;
 
 app.use(express.json());
 app.use(cookieParser())
@@ -20,9 +21,13 @@ app.use(function(req, res, next) {
     next();
 });
 
+//Adding a route for Login (no token needed, returns a token if authentication succeeded)
 app.use('/login', loginRoutes)
+
+//Adding a route fir signup (no token needed to create a new user and new family)
 app.use('/signup', signupRoutes)
 
+//Adding generic route for all other requests
 app.use(genericRoutes);
 
 //used to debug entrypoints and middlewares, not used in production
