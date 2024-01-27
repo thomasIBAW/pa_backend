@@ -4,7 +4,8 @@ import genericRoutes from "./routes/genericRoutes.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
-import 'dotenv.config()'
+import 'dotenv/config'
+
 import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 
 const app = express();

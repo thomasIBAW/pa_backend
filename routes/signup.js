@@ -1,11 +1,3 @@
-// NOT READY YET; TO BE UPDARTED
-//
-// THIS IS STILL A COPY OF LOGIN
-// To be adapted to Creating a new USER without the need of a Token
-//
-// CAREFULLY USE
-
-
 import express from "express";
 import {write} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
@@ -14,8 +6,9 @@ import date from 'date-and-time';
 import {userSchema} from "../classes/schemas.js";
 import bcrypt from "bcrypt";
 import {User} from "../classes/classes.js";
+import 'dotenv/config'
 
-const secret = "yourSecretString" //to be set in Env variables
+const secret = process.env.mySecret | "yourSecretString" //to be set in Env variables
 const saltRounds = 10;
 
 const router = express.Router();
@@ -24,7 +17,7 @@ const collection = "users";
 router.post('/', async (req, res) => {
 
         let val = {}
-
+        console.log(req.body)
         const user = await userSchema.validateAsync(req.body);
         let username = user.username,
             useremail = user.email || "",
@@ -46,7 +39,7 @@ router.post('/', async (req, res) => {
             .then(s => {
                 // console.log('Item created :',s)
                 console.log(`Created User is ${JSON.stringify(val)}`)
-                logger.info(`created a new User in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
+                logger.info(`created a new User in ${collection} by user : ${JSON.stringify(val)}`);
 
                 res.status(200).json(val)
 

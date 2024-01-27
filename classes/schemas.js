@@ -30,7 +30,7 @@ export const userSchema = Joi.object({
         .alphanum()
         .min(3)
         .max(30)
-        .pattern(new RegExp('^[a-z0-9]$'))
+        .pattern(new RegExp('^[a-z][-a-z0-9]*$'))
         .required(),
     email: Joi.string()
         .email(),

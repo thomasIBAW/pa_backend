@@ -4,7 +4,7 @@ import {logger} from '../middlewares/loggers.js'
 import jwt from 'jsonwebtoken';
 import date from 'date-and-time';
 import { todoSchema } from "../classes/schemas.js";
-import "dotenv.config()"
+import 'dotenv/config'
 import bcrypt from "bcrypt";
 
 // secret needed to compare login password with the hash in the DB
