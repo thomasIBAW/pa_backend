@@ -2,6 +2,7 @@ import express from 'express';
 import {logger} from './middlewares/loggers.js'
 import genericRoutes from "./routes/genericRoutes.js";
 import loginRoutes from "./routes/login.js";
+import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
 import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 
@@ -11,7 +12,16 @@ const port = 3005;
 app.use(express.json());
 app.use(cookieParser())
 
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+});
+
 app.use('/login', loginRoutes)
+app.use('/signup', signupRoutes)
 
 app.use(genericRoutes);
 
