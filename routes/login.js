@@ -30,8 +30,9 @@ router.post('/', (req, res) => {
 
                 bcrypt.compare( password , user.password, function (err, result) {
                     if (err) {
-                        console.error('Error during password comparison:', err);
-                        return res.status(500).send('An error occurred.');
+                        console.error('An error occurred. Username Password mismatch:', err);
+                        logger.error(`An error occurred. Username Password mismatch - User: ${username}`)
+                        return res.status(500).send('An error occurred. Username Password mismatch');
                 }
 
                 if (result) {
