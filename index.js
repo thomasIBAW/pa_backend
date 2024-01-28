@@ -11,6 +11,12 @@ import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 const app = express();
 const port = process.env.port || 3005;
 
+const secret = process.env.mySecret
+//Checking if a secret is defined in .env file. If not the app will crash immediately
+if (!secret) {
+    throw new Error(err => {console.log('Missing mySecret in .env file. See github wiki for details.')})
+} else (console.log('mySecret found in .env file'))
+
 app.use(express.json());
 app.use(cookieParser())
 

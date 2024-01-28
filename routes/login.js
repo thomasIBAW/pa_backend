@@ -9,7 +9,7 @@ import bcrypt from "bcrypt";
 
 // secret needed to compare login password with the hash in the DB
 // Please change the secret to any random string in the .env file
-const secret = process.env.mySecret || "yourSecretString" //to be set in Env variables
+const secret = process.env.mySecret  //to be set in Env variables
 
 const router = express.Router();
 const collection = "todos";

@@ -3,16 +3,15 @@ import {Appointment, Family, Person, Tag, Todo, User} from '../classes/classes.j
 import {write, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
-import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
+
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
 import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
 import 'dotenv/config'
 
-const secret = process.env.mySecret || "yourSecretString"  // to be removed!
+
 const pattern = date.compile('DD.MM.YYYY')
 const router = express.Router();
-const saltRounds = 10;
+
 let collection = "";
 
 function setCollection(x) {

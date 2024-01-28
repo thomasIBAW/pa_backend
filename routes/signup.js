@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import {User} from "../classes/classes.js";
 import 'dotenv/config'
 
-const secret = process.env.mySecret | "yourSecretString" //to be set in Env variables
+const secret = process.env.mySecret //to be set in Env variables
 const saltRounds = 10;
 
 const router = express.Router();

@@ -1,7 +1,8 @@
 import {findSome} from "../connectors/dbConnector.js";
 import {logger} from "./loggers.js";
+import 'dotenv/config'
 import jwt from "jsonwebtoken";
-const secret = "yourSecretString"  // to be removed!
+const secret = process.env.mySecret
 
 
 export async function getFamilyCheck(req, res, next) {
