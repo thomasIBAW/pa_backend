@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
             .then(s => {
                 // console.log('Item created :',s)
                 console.log(`Created User is ${JSON.stringify(val)}`)
-                logger.info(`created a new User in ${collection} by user : ${JSON.stringify(val)}`);
+                logger.info(`created a new User in ${collection} by user : ${val.username}`);
 
                 res.status(200).json(val)
 

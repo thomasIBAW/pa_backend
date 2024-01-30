@@ -8,12 +8,13 @@ const secret = process.env.mySecret
 export async function getFamilyCheck(req, res, next) {
  /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created*/
-    if (req.params.coll !== 'users'){
+    console.log('reached getFamilyCheck middleware')
+    if (req.params.coll !== 'users' && req.params.coll !== 'family'){
          await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
-                    logger.warning('No family found. Cannot create item')
+                    logger.warn('No family found. Cannot create item')
                     return res.status(401).json('No family found. Cannot create item')
                 }
                 else {
@@ -35,6 +36,8 @@ export async function checkUserInFamily(req, res, next) {
 
     /*   this middleware checks if the currently logged in user (requester) has admin rights or is member in a family*/
 
+    console.log('reached checkUserInFamily middleware')
+
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
 
@@ -49,6 +52,9 @@ export async function checkUserInFamily(req, res, next) {
 }
 
 export async function checkDuplicates (req, res, next) {
+
+    console.log('reached checkDuplicates middleware')
+
     if (req.params.coll === 'users'){
         // console.log('reached Middleware...', req.params.coll, req.body.username)
             await findSome('users', { "username" : `${req.body.username}`} )
@@ -71,7 +77,8 @@ export async function checkDuplicates (req, res, next) {
         }
     else if (req.params.coll === 'family'){
 
-        // console.log('reached Middleware...')
+        console.log('reached Middleware...')
+
         await findSome('family', { "familyName" : `${req.body.familyName}`} )
             .then( (fam) => {
                 if (fam.length === 0) {
@@ -83,7 +90,7 @@ export async function checkDuplicates (req, res, next) {
                 }
             })
             .catch((err) => {
-                logger.error(err)
+                logger.error('middlewares.js / Family /',err)
                 console.log('error in middleware getFamilyCheck findSome call')
                 res.status(404).json(err)
             })
@@ -92,9 +99,12 @@ export async function checkDuplicates (req, res, next) {
 }
 export async function verifyJWTToken (req, res, next) {
 
+    console.log('reached verifyJWTToken middleware')
+
+
     jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
         if (err) {
-            logger.error('Error during token verification:', err);
+            logger.error('middlewares.js / verifyJWTToken /,Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
         }
         if (decoded) {

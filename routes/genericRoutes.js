@@ -162,9 +162,11 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                     familyColor = fam.familyColor || ""
 
                 val = new Family(familyName,familyColor)
+                
+                // console.log('userUuid is : ', req.decoded.userUuid)
 
-                val.familyAdmin = [decoded.userUuid]
-                val.familyMember = [decoded.userUuid]
+                val.familyAdmin = [req.decoded.userUuid]
+                val.familyMember = [req.decoded.userUuid]
 
                 break;
             case 'todos' :
@@ -231,11 +233,14 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
             })
             .catch((err) => {
                 logger.error(err)
+                console.log(err)
                 res.status(404).json(err)})
 
         }
     catch (err) {
         logger.error(err)
+        console.log('Error in middlewares.js, on the post item function',err)
+
         res.status(404).json(err.message)
     }
 
@@ -247,7 +252,7 @@ router.delete('/api/:coll/:uuid', (req, res) =>{
 
     deleteOne(collection, req.params.uuid)
     .then((d) => {
-        logger.warning(`Deleted from collection ${collection} entry: ${req.params.uuid} by: ...tbc`)
+        logger.warn(`Deleted from collection ${collection} entry: ${req.params.uuid} by: ...tbc`)
         res.status(200).json(d)
     })
     .catch((err) => {
@@ -264,7 +269,7 @@ router.patch('/api/:coll/:uuid', (req, res) =>{
 
     patchOne(collection, req.params.uuid, req.body)
     .then((d) => {
-        logger.warning(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+        logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
         res.status(200).json(d)})
     .catch((err) => {
         logger.error(err)
