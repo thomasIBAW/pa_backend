@@ -31,10 +31,18 @@ async function run() {
 
         const db = client.db()
         const users = db.collection('users')
+        const family = db.collection('family')
+        const people = db.collection('people')
+        const tags = db.collection('tags')
+        const calendar = db.collection('calendar')
 
         
         console.log('Cleaning DB...')
-        await users.drop()
+        if (await users.countDocuments() > 0) await users.drop()
+        if (await family.countDocuments() > 0) await family.drop()
+        if (await people.countDocuments() > 0) await people.drop()
+        if (await tags.countDocuments() > 0) await tags.drop()
+        if (await calendar.countDocuments() > 0) await calendar.drop()
         
         // console.log('Start inserting Data...')
         // const res = await collection.insertMany(issuesDB)
@@ -45,6 +53,10 @@ async function run() {
         
         console.log('Creating Indexes ....')
         await users.createIndex({uuid:1}, {unique:true})
+        await family.createIndex({uuid:1}, {unique:true})
+        await tags.createIndex({uuid:1}, {unique:true})
+        await people.createIndex({uuid:1}, {unique:true})
+        await calendar.createIndex({uuid:1}, {unique:true})
         // await users.createIndex({:1})
         // await users.createIndex({owner:1})
         // await users.createIndex({created:1})
