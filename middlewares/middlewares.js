@@ -8,14 +8,14 @@ const secret = process.env.mySecret
 export async function getFamilyCheck(req, res, next) {
  /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created*/
-    console.log('reached getFamilyCheck middleware')
+    console.log('Request has reached the "getFamilyCheck" middleware')
     if (req.params.coll !== 'users' && req.params.coll !== 'family'){
          await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
-                    logger.warn('No family found. Cannot create item')
-                    return res.status(401).json('No family found. Cannot create item')
+                    logger.warn('No family found. Check for "family_uuid" in the Request header')
+                    return res.status(401).json('No family found.  Check for "family_uuid" in the Request header')
                 }
                 else {
                     req.family = family[0]
@@ -36,7 +36,7 @@ export async function checkUserInFamily(req, res, next) {
 
     /*   this middleware checks if the currently logged in user (requester) has admin rights or is member in a family*/
 
-    console.log('reached checkUserInFamily middleware')
+    console.log('Request has reached "checkUserInFamily" middleware')
 
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
@@ -99,7 +99,7 @@ export async function checkDuplicates (req, res, next) {
 }
 export async function verifyJWTToken (req, res, next) {
 
-    console.log('reached verifyJWTToken middleware')
+    console.log('Request has reached the "verifyJWTToken" middleware')
 
 
     jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
