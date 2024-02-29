@@ -8,14 +8,14 @@ const secret = process.env.mySecret
 export async function getFamilyCheck(req, res, next) {
  /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created*/
-    console.log('Request has reached the "getFamilyCheck" middleware')
+    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware' )
     if (req.params.coll !== 'users' && req.params.coll !== 'family'){
          await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
-                    logger.warn('No family found. Check for "family_uuid" in the Request header')
-                    return res.status(401).json('No family found.  Check for "family_uuid" in the Request header')
+                    logger.warn(req.params.coll, ' - No family found. Check for "family_uuid" in the Request header')
+                    return res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
                 }
                 else {
                     req.family = family[0]
@@ -26,7 +26,7 @@ export async function getFamilyCheck(req, res, next) {
             })
             .catch((err) => {
                 logger.error(err)
-                console.log('error in middleware getFamilyCheck')
+                console.log(req.params.coll, ' - error in middleware getFamilyCheck')
                 res.status(404).json(err)
             })
     } else next()
@@ -36,7 +36,7 @@ export async function checkUserInFamily(req, res, next) {
 
     /*   this middleware checks if the currently logged in user (requester) has admin rights or is member in a family*/
 
-    console.log('Request has reached "checkUserInFamily" middleware')
+    console.log(req.params.coll, ' - Request has reached "checkUserInFamily" middleware')
 
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
@@ -53,7 +53,7 @@ export async function checkUserInFamily(req, res, next) {
 
 export async function checkDuplicates (req, res, next) {
 
-    console.log('reached checkDuplicates middleware')
+    console.log(req.params.coll, ' - Request has reached checkDuplicates middleware')
 
     if (req.params.coll === 'users'){
         // console.log('reached Middleware...', req.params.coll, req.body.username)
@@ -99,17 +99,17 @@ export async function checkDuplicates (req, res, next) {
 }
 export async function verifyJWTToken (req, res, next) {
 
-    console.log('Request has reached the "verifyJWTToken" middleware')
+    console.log(req.params.coll, ' - Request has reached the "verifyJWTToken" middleware')
 
 
     jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
         if (err) {
-            logger.error('middlewares.js / verifyJWTToken /,Error during token verification:', err);
+            logger.error(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
         }
         if (decoded) {
             //console.log('Endpoint Authenticated successful! user: ', decoded.username);
-            logger.info(`User <${decoded.username}> successfully Authenticated to endpoint`)
+            logger.info(req.params.coll, ` - User <${decoded.username}> successfully Authenticated to endpoint`)
 
             //if user is not Admin, restrict to only FamilyAdmin users
             // if (!decoded.isAdmin) {
