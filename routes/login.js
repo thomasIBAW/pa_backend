@@ -15,6 +15,7 @@ const router = express.Router();
 const collection = "todos";
 
 router.post('/', (req, res) => {
+    console.log(req)
     let username = req.body.username;
     let password = req.body.password;
         console.log(username, password)
@@ -48,8 +49,8 @@ router.post('/', (req, res) => {
                         userUuid: user.uuid,
                         linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
                     function(err, token) {
-
-                        res.status(200).send(token);
+                        // console.log(token)
+                        res.status(200).send({token:token});
                     }
                     );
 

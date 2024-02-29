@@ -49,17 +49,17 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
         if(req.isUserFamilyMember) {
         body.linkedFamily = session_familyUuid
         } else {
-            console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
-            logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+            console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+            logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
             return res.status(401).json(`not a family member`)
         }
     }
 
-    console.log('Searching for : ',body)
+    console.log(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
 
     findSome(collection, body)
         .then((d) => {
-            logger.info('Received a list request for appointments');
+            logger.info(`${collection} - Received a list request from User ${req.decoded.username}`);
             res.status(200).json(d)
         })
         .catch((err) => {
@@ -94,8 +94,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
         switch (req.params.coll) {
             case 'calendar' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
 
@@ -117,8 +117,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 break;
             case 'people' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
 
@@ -143,8 +143,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
             case 'tags' :
 
                 if (!req.isUserFamilyMember) {
-                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
 
@@ -171,8 +171,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 break;
             case 'todos' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    logger.warn(`User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+                    logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
 
@@ -225,7 +225,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
         await write(collection, val )
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`Created Item is ${JSON.stringify(val)}`)
+                console.log(`${collection} - Created Item is ${JSON.stringify(val)}`)
                 logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
                 res.status(200).json(val)
