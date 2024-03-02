@@ -101,6 +101,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
                 const calendar = await calendarSchema.validateAsync(req.body)
 
+                console.log(req.body)
+
                 let subject = calendar.subject,
                     creator = calendar.creator || "Unknown",
                     dateTimeStart = calendar.dateTimeStart,
@@ -110,7 +112,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                     note = calendar.note || "",
                     tags = calendar.tags || [],
                     important = calendar.important || false,
-                    created = date.format(new Date(), 'DD.MM.YYYY HH:MM')
+                    created = date.format(new Date(), 'YYYY-MM-DDTHH:MM')
 
                 val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
 

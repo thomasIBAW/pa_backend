@@ -8,7 +8,7 @@ const secret = process.env.mySecret
 export async function getFamilyCheck(req, res, next) {
  /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created*/
-    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware' )
+    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , req.headers.family_uuid )
     if (req.params.coll !== 'users' && req.params.coll !== 'family'){
          await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
             .then( (family) => {
@@ -26,7 +26,7 @@ export async function getFamilyCheck(req, res, next) {
             })
             .catch((err) => {
                 logger.error(err)
-                console.log(req.params.coll, ' - error in middleware getFamilyCheck')
+                console.log(req.params.coll, ' - error in middleware getFamilyCheck', req.headers.family_uuid)
                 res.status(404).json(err)
             })
     } else next()
