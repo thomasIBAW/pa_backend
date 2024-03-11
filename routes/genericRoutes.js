@@ -101,7 +101,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
                 const calendar = await calendarSchema.validateAsync(req.body)
 
-                console.log(req.body)
+                console.log('Backend received calendar payload to add: ', req.body)
 
                 let subject = calendar.subject,
                     creator = calendar.creator || "Unknown",
@@ -112,10 +112,10 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                     note = calendar.note || "",
                     tags = calendar.tags || [],
                     important = calendar.important || false,
-                    created = date.format(new Date(), 'YYYY-MM-DDTHH:MM')
+                    created = date.format(new Date(), 'YYYY-MM-DDTHH:mm')
 
                 val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
-
+                console.log('Backend passes the following to the DB connector: ', val)
                 break;
             case 'people' :
                 if (!req.isUserFamilyMember) {

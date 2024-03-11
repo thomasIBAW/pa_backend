@@ -1,7 +1,7 @@
 import date from 'date-and-time';
 import {v4 as uuid} from 'uuid';
 
-const pattern = date.compile('YYYY-MM-DDTHH:MM')
+const pattern = date.compile('YYYY-MM-DDTHH:mm')
 
 export class Appointment {
     constructor(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created, tags){
@@ -9,11 +9,11 @@ export class Appointment {
         this.subject = subject
         this.fullDay = fullDay
         if (fullDay) {
-            this.dateTimeStart = date.format(new Date(dateTimeStart),'YYYY-MM-DDTHH:MM')
-            this.dateTimeEnd = date.format(new Date(dateTimeEnd), 'YYYY-MM-DDTHH:MM')
+            this.dateTimeStart = date.format(new Date(dateTimeStart),'YYYY-MM-DDTHH:mm')
+            this.dateTimeEnd = date.format(new Date(dateTimeEnd), 'YYYY-MM-DDTHH:mm')
         } else {
-            this.dateTimeStart = date.format(new Date(dateTimeStart), 'YYYY-MM-DDTHH:MM')
-            this.dateTimeEnd = date.format(new Date(dateTimeEnd), 'YYYY-MM-DDTHH:MM')
+            this.dateTimeStart = date.format(new Date(dateTimeStart), 'YYYY-MM-DDTHH:mm')
+            this.dateTimeEnd = date.format(new Date(dateTimeEnd), 'YYYY-MM-DDTHH:mm')
         };
         this.attendees = attendees
         this.note = note
