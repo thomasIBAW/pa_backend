@@ -14,6 +14,8 @@ const router = express.Router();
 
 let collection = "";
 
+
+
 function setCollection(x) {
         switch (x) {
             case ('calendar') :
@@ -42,7 +44,10 @@ function setCollection(x) {
 router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
     const body = req.body
-    const session_familyUuid = req.headers.family_uuid
+
+    let authState = JSON.parse(req.cookies._auth_state) || ""
+
+    const session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
 
     /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family */
     if (!req.decoded.isAdmin) {
@@ -75,7 +80,9 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
     setCollection(req.params.coll);
 
-    const session_familyUuid = req.headers.family_uuid
+    let authState = JSON.parse(req.cookies._auth_state) || ""
+
+    const session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
 
     /*console.log(`
     Details about current API call: 
@@ -220,7 +227,12 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
         }
 
         if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
-            val.linkedFamily = req.headers.family_uuid
+
+            let authState = JSON.parse(req.cookies._auth_state) || ""
+
+
+
+            val.linkedFamily = req.headers.family_uuid || authState.linkedFamily
             }
         val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
