@@ -4,6 +4,7 @@ import 'dotenv/config'
 import jwt from "jsonwebtoken";
 const secret = process.env.mySecret
 //import cookieParser from "cookie-parser";
+//demo
 
 let currentFamily = ""
 let currentApiKey = ""
