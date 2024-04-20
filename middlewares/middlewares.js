@@ -6,7 +6,7 @@ const secret = process.env.mySecret
 //import cookieParser from "cookie-parser";
 //demo
 
-let currentFamily = ""
+let currentFamily = {}
 let currentApiKey = ""
 
 export async function getFamilyCheck(req, res, next) {

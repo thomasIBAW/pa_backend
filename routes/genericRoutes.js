@@ -45,9 +45,16 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
     setCollection(req.params.coll);
     const body = req.body
 
-    let authState = JSON.parse(req.cookies._auth_state) || ""
+    let session_familyUuid = ""
 
-    const session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
+    if (req.cookies._auth_state) {
+        let authState = JSON.parse(req.cookies._auth_state)
+        session_familyUuid = authState.linkedFamily ;
+    }
+    if (req.headers.family_uuid) {
+        session_familyUuid = req.headers.family_uuid
+    }
+
 
     /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family */
     if (!req.decoded.isAdmin) {
@@ -80,11 +87,21 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
     setCollection(req.params.coll);
 
-    let authState = JSON.parse(req.cookies._auth_state) || ""
+    let session_familyUuid = ""
 
-    const session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
+    if (req.cookies._auth_state) {
+        let authState = JSON.parse(req.cookies._auth_state)
+        session_familyUuid = authState.linkedFamily ;
+    }
+    if (req.headers.family_uuid) {
+        session_familyUuid = req.headers.family_uuid
+    }
 
-    /*console.log(`
+
+    //let authState = JSON.parse(req.cookies._auth_state) || ""
+    //let session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
+
+    console.log(`
     Details about current API call: 
     endpoint : ${req.params.coll}
     logged in user: ${req.decoded.username}
@@ -93,7 +110,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
     (isFamilyMember : ${req.isUserFamilyMember})
     Family name is : ${req.family.familyName}
     FamilyUuid : ${session_familyUuid}
-    `)*/
+    `)
 
     try {
         let val = {};
@@ -228,11 +245,14 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
         if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
 
-            let authState = JSON.parse(req.cookies._auth_state) || ""
+            if (req.cookies._auth_state) {
+                    let authState = JSON.parse(req.cookies._auth_state)
+                    val.linkedFamily = authState.linkedFamily ;
+                }
+            if (req.headers.family_uuid) {
+                    val.linkedFamily = req.headers.family_uuid
+                }
 
-
-
-            val.linkedFamily = req.headers.family_uuid || authState.linkedFamily
             }
         val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
