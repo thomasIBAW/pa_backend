@@ -1,4 +1,4 @@
-FROM node:20.2.0-alpine3.17
+FROM node:20.9.0-alpine3.18
 RUN addgroup app && adduser -S -G app app
 USER app
 
@@ -9,6 +9,6 @@ RUN npm install
 
 COPY --chown=app:app . .
 
-EXPOSE 3000
+EXPOSE 3005
 
 CMD ["node", "index.js"]

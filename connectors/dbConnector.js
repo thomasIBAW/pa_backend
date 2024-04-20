@@ -2,7 +2,7 @@ import {MongoClient} from 'mongodb';
 import 'dotenv/config'
 
 // Connection URL
-const url = process.env.mongo_connection || 'mongodb://localhost:27017';
+const url = process.env.mongo_connection || 'mongodb://db:27017';
 const client = new MongoClient(url);
 
 // Database Name
