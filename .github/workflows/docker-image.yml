@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Build and Push
 
 on:
   push:
@@ -6,12 +6,16 @@ on:
       - 'v*'
 
 jobs:
-
-  build:
-
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ircnega/test02:$(date +%s)
+    - name: Check out the repo
+      uses: actions/checkout@v2
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ircnega/demo01:latest,ircnega/demo02:${{ github.ref_name }}
