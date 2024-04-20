@@ -20,3 +20,10 @@ tbc
 
 > [!NOTE]
 > Please see [wiki](https://github.com/TBEMSESG/pa_backend/wiki) for documentation
+
+## Docker compose
+```
+
+tbc
+
+```

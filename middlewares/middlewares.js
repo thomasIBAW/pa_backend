@@ -10,9 +10,9 @@ let currentFamily = ""
 let currentApiKey = ""
 
 export async function getFamilyCheck(req, res, next) {
-    // console.log("Request headers received: ", JSON.parse(req.cookies._auth_state))
-    // console.log("Request body received: ",req.body)
-    // console.log("Cookies: ", req.cookies)
+
+    console.log("Request body received: ",req.body)
+    //console.log("Cookies: ", req.cookies)
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
@@ -22,9 +22,12 @@ export async function getFamilyCheck(req, res, next) {
         else {
             // if cookie exists:
             currentFamily = JSON.parse(req.cookies._auth_state)
+            console.log("Request user from Cookie: ", JSON.parse(req.cookies._auth_state))
+
         }
     } else {
-        currentFamily = req.headers.family_uuid
+        currentFamily.linkedFamily = req.headers.family_uuid
+        console.log("Request family from Header: ", req.headers.family_uuid)
     }
 
     // checks if api_key comes from Header or Cookie

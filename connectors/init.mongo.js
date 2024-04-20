@@ -9,7 +9,7 @@
 import 'dotenv/config'
 import { MongoClient, ServerApiVersion } from "mongodb";
 
-const url = 'mongodb://localhost/family'
+const url = process.env.mongo_connection || 'mongodb://db:27017';
 
 const client = new MongoClient(url, {
     serverApi: {
