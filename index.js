@@ -12,7 +12,6 @@ import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 
 const app = express();
 const port = process.env.port || 3005;
-
 const secret = process.env.mySecret
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
@@ -22,7 +21,11 @@ if (!secret) {
 app.use(express.json());
 app.use(cookieParser())
 
-app.use(cors());
+app.use(cors({
+    allowedHeaders: ['Content-Type', 'api_key', 'family_uuid'], // Include custom headers here
+    origin: '*', // Or a more restrictive setting for security
+    methods: "GET,PUT,PATCH,POST,DELETE",
+}));
 // app.use(function(req, res, next) {
 //     res.header("Access-Control-Allow-Origin", "http://localhost:5173");
 //     res.header("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")

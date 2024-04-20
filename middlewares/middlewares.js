@@ -3,14 +3,50 @@ import {logger} from "./loggers.js";
 import 'dotenv/config'
 import jwt from "jsonwebtoken";
 const secret = process.env.mySecret
+//import cookieParser from "cookie-parser";
 
+let currentFamily = ""
+let currentApiKey = ""
 
 export async function getFamilyCheck(req, res, next) {
- /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
-    the check is done only for non-user creation calls, because at the user creation time, family is not yet created*/
-    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , req.headers.family_uuid )
+    // console.log("Request headers received: ", JSON.parse(req.cookies._auth_state))
+    // console.log("Request body received: ",req.body)
+    // console.log("Cookies: ", req.cookies)
+
+    // checks if family uuid comes from Header or Cookie
+    if (!req.headers.family_uuid) {
+        if (!req.cookies._auth_state) {
+            return res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
+        }
+        else {
+            // if cookie exists:
+            currentFamily = JSON.parse(req.cookies._auth_state)
+        }
+    } else {
+        currentFamily = req.headers.family_uuid
+    }
+
+    // checks if api_key comes from Header or Cookie
+    if (!req.headers.api_key) {
+        if (!req.cookies._auth) {
+            return res.status(401).json(req.params.coll, ' - No ApiKey found.  Check for "api_key" in the Request header')
+        }
+        else {
+            // if cookie exists:
+            currentApiKey = req.cookies._auth
+        }
+    } else {
+        currentApiKey = req.headers.api_key
+    }
+
+
+    /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
+    the check is done only for non-user creation calls, because at the user creation time, family is not yet created */
+
+    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , currentFamily.linkedFamily )
+
     if (req.params.coll !== 'users' && req.params.coll !== 'family'){
-         await findSome('family', { "uuid" : `${req.headers.family_uuid}`} )
+         await findSome('family', { "uuid" : `${currentFamily.linkedFamily}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
@@ -21,6 +57,7 @@ export async function getFamilyCheck(req, res, next) {
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
+                    req.token = currentApiKey
                     next()
                 }
             })
@@ -102,7 +139,7 @@ export async function verifyJWTToken (req, res, next) {
     console.log(req.params.coll, ' - Request has reached the "verifyJWTToken" middleware')
 
 
-    jwt.verify(req.headers.api_key, secret, async function(err, decoded) {
+    jwt.verify(req.token, secret, async function(err, decoded) {
         if (err) {
             logger.error(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
