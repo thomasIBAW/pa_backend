@@ -4,6 +4,7 @@ import 'dotenv/config'
 import jwt from "jsonwebtoken";
 const secret = process.env.mySecret
 
+//Old Master Commit
 
 export async function getFamilyCheck(req, res, next) {
  /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
