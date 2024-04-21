@@ -56,7 +56,7 @@ async function run() {
         await family.createIndex({uuid:1}, {unique:true})
         await tags.createIndex({uuid:1}, {unique:true})
         await people.createIndex({uuid:1}, {unique:true})
-        await calendar.createIndex({uuid:1}, {unique:true})
+        await appointments.createIndex({uuid:1}, {unique:true})
         // await users.createIndex({:1})
         // await users.createIndex({owner:1})
         // await users.createIndex({created:1})

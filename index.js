@@ -23,8 +23,9 @@ app.use(cookieParser())
 
 app.use(cors({
     allowedHeaders: ['Content-Type', 'api_key', 'family_uuid'], // Include custom headers here
-    origin: '*', // Or a more restrictive setting for security
+    origin: ['http://localhost', 'http://localhost:5173'], // Or a more restrictive setting for security
     methods: "GET,PUT,PATCH,POST,DELETE",
+    credentials: true,
 }));
 // app.use(function(req, res, next) {
 //     res.header("Access-Control-Allow-Origin", "http://localhost:5173");
