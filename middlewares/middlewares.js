@@ -12,7 +12,8 @@ let currentApiKey = ""
 export async function getFamilyCheck(req, res, next) {
 
     console.log("Request body received: ",req.body)
-    //console.log("Cookies: ", req.cookies)
+    console.log("Cookies: ", req.cookies)
+    console.log("header: ", req.headers)
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
@@ -49,19 +50,20 @@ export async function getFamilyCheck(req, res, next) {
 
     console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , currentFamily.linkedFamily )
 
-    if (req.params.coll !== 'users' && req.params.coll !== 'family'){
+    if (req.params.coll !== 'users'){
          await findSome('family', { "uuid" : `${currentFamily.linkedFamily}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
                     logger.warn(req.params.coll, ' - No family found. Check for "family_uuid" in the Request header')
-                    return res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
+                    res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
                 }
                 else {
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
                     req.token = currentApiKey
+                    console.log('getFamilyCheck successful')
                     next()
                 }
             })
@@ -87,9 +89,10 @@ export async function checkUserInFamily(req, res, next) {
         isUserFamilyMember = req.familyMember.includes(req.decoded.userUuid)
         req.isUserFamilyAdmin = isUserFamilyAdmin
         req.isUserFamilyMember = isUserFamilyMember
-
+        console.log('checkUserInFamily successful')
         next()
-    } else next()
+    }
+    else next()
 }
 
 export async function checkDuplicates (req, res, next) {
@@ -101,6 +104,7 @@ export async function checkDuplicates (req, res, next) {
             await findSome('users', { "username" : `${req.body.username}`} )
                 .then( (user) => {
                     if (user.length === 0) {
+                        console.log('checkDuplicates successful')
                         next()
                     }
                     else {
@@ -142,10 +146,10 @@ export async function verifyJWTToken (req, res, next) {
 
     console.log(req.params.coll, ' - Request has reached the "verifyJWTToken" middleware')
 
-
     jwt.verify(req.token, secret, async function(err, decoded) {
         if (err) {
             logger.error(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
+            console.log(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
         }
         if (decoded) {
@@ -161,9 +165,10 @@ export async function verifyJWTToken (req, res, next) {
             //     }
             // }
 
-            //console.log(`My user uuid: ${decoded.userUuid}. All Admins in current Family are: ${req.familyAdmin}`)
+            console.log(`My user uuid: ${decoded.userUuid}. All Admins in current Family are: ${req.familyAdmin}`)
 
             req.decoded = decoded
+            console.log('verifyJWTToken successful')
             next()
             // Code to be executed here:
         }
