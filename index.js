@@ -17,7 +17,14 @@ const port = process.env.port || 3005;
 const secret = process.env.mySecret
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { /* options */ });
+const io = new Server(httpServer, {
+    cors: {
+        origin: ["http://localhost", "http://localhost:5173"], // Update these to match the client URLs
+        methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type", "api_key", "family_uuid"],
+        credentials: true
+    }
+});
 
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
@@ -29,7 +36,7 @@ app.use(cookieParser())
 
 app.use(cors({
     allowedHeaders: ['Content-Type', 'api_key', 'family_uuid'], // Include custom headers here
-    origin: ['http://localhost', 'http://localhost:5173', 'http://localhost:3005'], // Or a more restrictive setting for security
+    origin: ['http://localhost', 'http://localhost:5173'], // Or a more restrictive setting for security
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
@@ -70,6 +77,13 @@ app.use((err, req, res, next) => {
 
 io.on("connection", (socket) => {
     console.log(socket.id); // ojIckSD2jqNzOqIrAGzL
+});
+
+io.on('connection', (socket) => {
+    socket.on('join_room', (room) => {
+        socket.join(room);
+        console.log(`Socket ${socket.id} joined room ${room}`);
+    });
 });
 
 
