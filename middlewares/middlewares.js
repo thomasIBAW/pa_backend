@@ -11,9 +11,9 @@ let currentApiKey = ""
 
 export async function getFamilyCheck(req, res, next) {
 
-    console.log("Request body received: ",req.body)
-    console.log("Cookies: ", req.cookies)
-    console.log("header: ", req.headers)
+    // console.log("Request body received: ",req.body)
+    // console.log("Cookies: ", req.cookies)
+    // console.log("header: ", req.headers)
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {

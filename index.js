@@ -29,7 +29,7 @@ app.use(cookieParser())
 
 app.use(cors({
     allowedHeaders: ['Content-Type', 'api_key', 'family_uuid'], // Include custom headers here
-    origin: ['http://localhost', 'http://localhost:5173'], // Or a more restrictive setting for security
+    origin: ['http://localhost', 'http://localhost:5173', 'http://localhost:3005'], // Or a more restrictive setting for security
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
