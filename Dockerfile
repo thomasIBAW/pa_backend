@@ -9,6 +9,15 @@ RUN npm install
 
 COPY --chown=app:app . .
 
+# Set build arguments as environment variables
+ARG BACKEND
+ARG DEVSTATE
+
+ENV BACKEND=$BACKEND
+ENV DEVSTATE=$DEVSTATE
+
+
+
 EXPOSE 3005
 
 CMD ["node", "index.js"]
