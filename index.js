@@ -5,6 +5,8 @@ import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
 import cors from "cors"
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 import 'dotenv/config'
 
@@ -13,6 +15,10 @@ import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 const app = express();
 const port = process.env.port || 3005;
 const secret = process.env.mySecret
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, { /* options */ });
+
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
     throw new Error(err => {console.log('Missing mySecret in .env file. See github wiki for details.')})
@@ -62,8 +68,13 @@ app.use((err, req, res, next) => {
     }
   });
 
+io.on("connection", (socket) => {
+    console.log(socket.id); // ojIckSD2jqNzOqIrAGzL
+});
 
-app.listen(port, () => {
+
+
+httpServer.listen(port, () => {
     console.log(`Server listening on port ${port}...`)
 })
 
