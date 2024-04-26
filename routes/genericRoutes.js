@@ -7,7 +7,7 @@ import date from 'date-and-time';
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
 import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
 import 'dotenv/config'
-
+import {io} from "../index.js";
 
 const pattern = date.compile('DD.MM.YYYY')
 const router = express.Router();
@@ -262,6 +262,13 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 console.log(`${collection} - Created Item is ${JSON.stringify(val)}`)
                 logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
+                // Adding a socket message to update all open pages
+                // Socket updates an useless state on all connected clients on the pages identified by the collection.
+                // The updated state triggers a page reload so that any new item immediately appears on the client.
+                io.emit(collection, new Date());
+
+
+                // sending result to client
                 res.status(200).json(val)
 
             })

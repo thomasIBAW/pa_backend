@@ -17,7 +17,7 @@ const port = process.env.port || 3005;
 const secret = process.env.mySecret
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
     cors: {
         origin: ["http://localhost", "http://localhost:5173"], // Update these to match the client URLs
         methods: ["GET", "POST"],
