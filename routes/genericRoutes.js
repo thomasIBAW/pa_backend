@@ -265,7 +265,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 // Adding a socket message to update all open pages
                 // Socket updates an useless state on all connected clients on the pages identified by the collection.
                 // The updated state triggers a page reload so that any new item immediately appears on the client.
-                io.emit(collection, new Date());
+                io.to(val.linkedFamily).emit(collection, new Date());
 
 
                 // sending result to client
