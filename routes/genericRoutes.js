@@ -100,17 +100,17 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
     //let authState = JSON.parse(req.cookies._auth_state) || ""
     //let session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
-
-    console.log(`
-    Details about current API call: 
-    endpoint : ${req.params.coll}
-    logged in user: ${req.decoded.username}
-    (isAdmin : ${req.decoded.isAdmin}) 
-    (isFamilyAdmin : ${req.isUserFamilyAdmin})
-    (isFamilyMember : ${req.isUserFamilyMember})
-    Family name is : ${req.family.familyName}
-    FamilyUuid : ${session_familyUuid}
-    `)
+    //
+    // console.log(`
+    // Details about current API call:
+    // endpoint : ${req.params.coll}
+    // logged in user: ${req.decoded.username}
+    // (isAdmin : ${req.decoded.isAdmin})
+    // (isFamilyAdmin : ${req.isUserFamilyAdmin})
+    // (isFamilyMember : ${req.isUserFamilyMember})
+    // Family name is : ${req.family.familyName}
+    // FamilyUuid : ${session_familyUuid}
+    // `)
 
     try {
         let val = {};

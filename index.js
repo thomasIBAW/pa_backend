@@ -19,16 +19,16 @@ const secret = process.env.mySecret
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost", "http://localhost:5173"], // Update these to match the client URLs
-        methods: ["GET", "POST"],
-        allowedHeaders: ["Content-Type", "api_key", "family_uuid"],
+        origin: ["http://localhost", "http://localhost:5173", "https://app.famcal.ch"], // Update these to match the client URLs
+        methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type"],
         credentials: true
     }
 });
 
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
-    throw new Error(err => {console.log('Missing mySecret in .env file. See github wiki for details.')})
+    throw new Error('Missing mySecret in .env file. See github wiki for details.');
 } else (console.log('mySecret found in .env file'))
 
 app.use(express.json());
@@ -40,12 +40,6 @@ app.use(cors({
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
-// app.use(function(req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-//     res.header("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-//     res.header("Access-Control-Allow-Headers", "*");
-//     next();
-// });
 
 //Adding a route for Login (no token needed, returns a token if authentication succeeded)
 app.use('/login', loginRoutes)
@@ -66,20 +60,18 @@ app.use(genericRoutes);
 // API Error handling (express middleware)
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-      // Handle the error here
-      logger.error(err)
-      res.status(400).send('Bad JSON in Payload. Check for typos');
+        // Handle the error here
+        logger.error(err)
+        res.status(400).send('Bad JSON in Payload. Check for typos');
     } else {
-      // Pass on to the next error handler
-      next(err);
+        // Pass on to the next error handler
+        next(err);
     }
-  });
-
-io.on("connection", (socket) => {
-    console.log(socket.id); // ojIckSD2jqNzOqIrAGzL
 });
 
-io.on('connection', (socket) => {
+
+io.on("connection", (socket) => {
+    console.log(socket.id); // Log the socket ID
     socket.on('join_room', (room) => {
         socket.join(room);
         console.log(`Socket ${socket.id} joined room ${room}`);
