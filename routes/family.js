@@ -37,7 +37,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
     else {
         console.log(`${collection} - no family_uuid received from the query ! Aborted...`)
         logger.warn(`${collection} - no family_uuid received from the query ! Aborted...`)
-        return res.status(401).json(`no family_uuid received from the query ! Aborted...`)
+        return res.status(401).json({ message: 'no family_uuid received from the query ! Aborted...'})
     }
 
 
@@ -48,7 +48,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
         } else {
             console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
             logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-            return res.status(401).json(`not a family member`)
+            return res.status(401).json({ message: `not a family member`})
         }
     }
 
@@ -68,7 +68,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 })
 
 // Endpoint to create a new item
-router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
+router.post('/api/:coll', checkDuplicates, async (req, res) =>{
 
     setCollection(req.params.coll);
 
@@ -105,7 +105,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 if (!req.isUserFamilyMember) {
                     console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({ message: `not a family member`})
                 }
 
                 const calendar = await calendarSchema.validateAsync(req.body)
@@ -130,7 +130,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 if (!req.isUserFamilyMember) {
                     console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({ message: `not a family member`})
                 }
 
                 let person = await personSchema.validateAsync(req.body)
@@ -156,7 +156,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 if (!req.isUserFamilyMember) {
                     console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({ message: `not a family member`})
                 }
 
                 const tag = await tagsSchema.validateAsync(req.body)
@@ -184,7 +184,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 if (!req.isUserFamilyMember) {
                     console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({ message: `not a family member`})
                 }
 
                 const to = await todoSchema.validateAsync(req.body);
@@ -224,7 +224,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
             //     console.log(val)
             //     break;
             case 'default' : {
-                res.status(404).json(`Not existing endpoint ${req.params.coll}`)
+                res.status(404).json({ message: `Not existing endpoint ${req.params.coll}`})
             }
         }
 
@@ -291,7 +291,7 @@ router.delete('/api/:coll/:uuid', (req, res) =>{
 router.patch('/api/:coll/:uuid', (req, res) =>{
     setCollection(req.params.coll);
 
-    if (!req.body) return res.status(404).json('Missing body...')
+    if (!req.body) return res.status(404).json({ message: 'Missing body...'})
 
     patchOne(collection, req.params.uuid, req.body)
         .then((d) => {

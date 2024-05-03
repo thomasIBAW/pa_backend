@@ -3,8 +3,8 @@ import {logger} from "./loggers.js";
 import 'dotenv/config'
 import jwt from "jsonwebtoken";
 const secret = process.env.mySecret
-//import cookieParser from "cookie-parser";
-//demo
+import cookieParser from "cookie-parser";
+
 
 let currentFamily = {}
 let currentApiKey = ""
@@ -20,7 +20,8 @@ export async function getFamilyCheck(req, res, next) {
         if (!req.cookies._auth_state) {
             console.log(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
-            return res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
+            return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
+            //throw new Error("- getFamilyCheck - no family_uuid received from the query ! Aborted...")
         }
         else {
             // if cookie exists:
@@ -37,7 +38,7 @@ export async function getFamilyCheck(req, res, next) {
         if (!req.cookies._auth) {
             console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
             logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
-            return res.status(401).json(req.params.coll, ' - No ApiKey found.  Check for "api_key" in the Request header')
+            return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
         }
         else {
             // if cookie exists:
@@ -134,8 +135,8 @@ export async function checkDuplicates (req, res, next) {
                     next()
                 }
                 else {
-                    logger.warn('Duplicated familyname. Cannot create item')
-                    return res.status(403).json('Duplicated familyname. Cannot create item')
+                    logger.warn('Duplicated family name. Cannot create item')
+                    return res.status(403).json({ message: 'Duplicated family name. Cannot create item'})
                 }
             })
             .catch((err) => {

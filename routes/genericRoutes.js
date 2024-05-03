@@ -288,7 +288,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 });
 
 // Endpoint to delete an item
-router.delete('/api/:coll/:uuid', (req, res) =>{
+router.delete('/api/:coll/:uuid', getFamilyCheck, verifyJWTToken , checkUserInFamily,(req, res) =>{
     setCollection(req.params.coll);
 
     deleteOne(collection, req.params.uuid)
@@ -303,10 +303,10 @@ router.delete('/api/:coll/:uuid', (req, res) =>{
 })
 
 // Endpoint to Update am item
-router.patch('/api/:coll/:uuid', (req, res) =>{
+router.patch('/api/:coll/:uuid', getFamilyCheck, verifyJWTToken , checkUserInFamily,(req, res) =>{
     setCollection(req.params.coll);
 
-    if (!req.body) return res.status(404).json('Missing body...')
+    if (!req.body) return res.status(404).json({message:'Missing body...'})
 
     patchOne(collection, req.params.uuid, req.body)
     .then((d) => {
