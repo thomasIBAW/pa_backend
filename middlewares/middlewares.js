@@ -11,29 +11,32 @@ let currentApiKey = ""
 
 export async function getFamilyCheck(req, res, next) {
 
-    // console.log("Request body received: ",req.body)
+    //console.log("get FamilyCheck - Request body received: ",req.body)
     // console.log("Cookies: ", req.cookies)
     // console.log("header: ", req.headers)
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
         if (!req.cookies._auth_state) {
+            console.log(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
+            logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             return res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
         }
         else {
             // if cookie exists:
             currentFamily = JSON.parse(req.cookies._auth_state)
-            console.log("Request user from Cookie: ", JSON.parse(req.cookies._auth_state))
-
+            //console.log("Request user from Cookie: ", JSON.parse(req.cookies._auth_state))
         }
     } else {
         currentFamily.linkedFamily = req.headers.family_uuid
-        console.log("Request family from Header: ", req.headers.family_uuid)
+        // console.log("Request family from Header: ", req.headers.family_uuid)
     }
 
     // checks if api_key comes from Header or Cookie
     if (!req.headers.api_key) {
         if (!req.cookies._auth) {
+            console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
+            logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
             return res.status(401).json(req.params.coll, ' - No ApiKey found.  Check for "api_key" in the Request header')
         }
         else {
@@ -50,13 +53,14 @@ export async function getFamilyCheck(req, res, next) {
 
     console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , currentFamily.linkedFamily )
 
+
     if (req.params.coll !== 'users'){
          await findSome('family', { "uuid" : `${currentFamily.linkedFamily}`} )
             .then( (family) => {
 
                 if (family.length === 0) {
-                    logger.warn(req.params.coll, ' - No family found. Check for "family_uuid" in the Request header')
-                    res.status(401).json(req.params.coll, ' - No family found.  Check for "family_uuid" in the Request header')
+                    logger.warn(req.params.coll, ' - getFamilyCheck - No family found. Check for "family_uuid" in the Request header')
+                    res.status(401).json(req.params.coll, ' - getFamilyCheck - No family found.  Check for "family_uuid" in the Request header')
                 }
                 else {
                     req.family = family[0]
