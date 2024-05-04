@@ -89,7 +89,7 @@ export async function checkUserInFamily(req, res, next) {
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
 
-    if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
+    if (req.params.coll !== "users") {
         isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
         isUserFamilyMember = req.familyMember.includes(req.decoded.userUuid)
         req.isUserFamilyAdmin = isUserFamilyAdmin
@@ -148,6 +148,23 @@ export async function checkDuplicates (req, res, next) {
     else next()
 }
 export async function verifyJWTToken (req, res, next) {
+
+    if (!req.token) {
+        // checks if api_key comes from Header or Cookie
+        if (!req.headers.api_key) {
+            if (!req.cookies._auth) {
+                console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
+                logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
+                return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
+            }
+            else {
+                // if cookie exists:
+                req.token = req.cookies._auth
+            }
+        } else {
+            req.token = req.headers.api_key
+        }
+    }
 
     console.log(req.params.coll, ' - Request has reached the "verifyJWTToken" middleware')
 

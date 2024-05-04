@@ -1,6 +1,7 @@
 import express from 'express';
 import {logger} from './middlewares/loggers.js'
 import genericRoutes from "./routes/genericRoutes.js";
+import family from "./routes/family.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
@@ -11,6 +12,7 @@ import { Server } from "socket.io";
 import 'dotenv/config'
 
 import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
+
 
 const app = express();
 const port = process.env.port || 3005;
@@ -39,6 +41,9 @@ app.use(cors({
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
 }));
+
+//Adding a route for family
+app.use('/api/family', family)
 
 //Adding a route for Login (no token needed, returns a token if authentication succeeded)
 app.use('/login', loginRoutes)
