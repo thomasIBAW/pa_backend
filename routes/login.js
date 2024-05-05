@@ -49,7 +49,15 @@ router.post('/', (req, res) => {
                         userUuid: user.uuid,
                         linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
                     function(err, token) {
+                        
+                        
                         // console.log(token)
+                        res.cookie('token', token, {
+                            sameSite: 'strict',
+                            httpOnly: true,
+                        })
+                
+                        
                         res.status(200).send({token:token});
                     }
                     );

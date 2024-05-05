@@ -17,7 +17,7 @@ const collection = "users";
 router.post('/', async (req, res) => {
 
         let val = {}
-        console.log(req.body)
+        console.log('Received Body from the request is : ',req.body)
         const user = await userSchema.validateAsync(req.body);
         let username = user.username,
             useremail = user.email || "",

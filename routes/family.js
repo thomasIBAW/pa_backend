@@ -79,7 +79,7 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
 })
 
 // Endpoint to create a new item
-router.post('/', addColl, verifyJWTToken, checkDuplicates, async (req, res) =>{
+router.post('/', addColl, verifyJWTToken, async (req, res) =>{
 
     let session_familyUuid = ""
 
