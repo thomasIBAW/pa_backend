@@ -17,7 +17,7 @@ export async function getFamilyCheck(req, res, next) {
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
-        if (!req.cookies._auth_state) {
+        if (!req.cookies.fc_user) {
             console.log(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
@@ -25,7 +25,7 @@ export async function getFamilyCheck(req, res, next) {
         }
         else {
             // if cookie exists:
-            currentFamily = JSON.parse(req.cookies._auth_state)
+            currentFamily = JSON.parse(req.cookies.fc_user)
             //console.log("Request user from Cookie: ", JSON.parse(req.cookies._auth_state))
         }
     } else {
@@ -35,14 +35,14 @@ export async function getFamilyCheck(req, res, next) {
 
     // checks if api_key comes from Header or Cookie
     if (!req.headers.api_key) {
-        if (!req.cookies._auth) {
+        if (!req.cookies.fc_token) {
             console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
             logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
             return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
         }
         else {
             // if cookie exists:
-            currentApiKey = req.cookies._auth
+            currentApiKey = req.cookies.fc_token
         }
     } else {
         currentApiKey = req.headers.api_key
@@ -152,14 +152,14 @@ export async function verifyJWTToken (req, res, next) {
     if (!req.token) {
         // checks if api_key comes from Header or Cookie
         if (!req.headers.api_key) {
-            if (!req.cookies._auth) {
+            if (!req.cookies.fc_token) {
                 console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
                 logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
                 return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
             }
             else {
                 // if cookie exists:
-                req.token = req.cookies._auth
+                req.token = req.cookies.fc_token
             }
         } else {
             req.token = req.headers.api_key
