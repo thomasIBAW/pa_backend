@@ -52,13 +52,26 @@ router.post('/', (req, res) => {
                         
                         
                         // console.log(token)
-                        res.cookie('token', token, {
+                        res.cookie('fc_token', token, {
                             sameSite: 'strict',
-                            httpOnly: true,
+                            httpOnly: false,
                         })
-                
-                        
-                        res.status(200).send({token:token});
+            
+                        res.cookie('fc_user', 
+                        JSON.stringify({
+                            username: user.username,
+                            remember: user.remember,
+                            isAdmin: user.isAdmin,
+                            isFamilyAdmin: user.isFamilyAdmin,
+                            linkedPerson: user.linkedPerson,
+                            userUuid: user.uuid,
+                            linkedFamily: user.linkedFamily })
+                        , {
+                            sameSite: 'strict',
+                            httpOnly: false,
+                        })
+
+                        res.status(200).json({token:token});
                     }
                     );
 

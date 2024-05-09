@@ -13,18 +13,23 @@ const secret = process.env.mySecret  //to be set in Env variables
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.get('/', (req, res) => {
 
     {
         console.log("received logout request ... ")
 
-        res.clearCookie('token', {
+        res.clearCookie('fc_token', {
             sameSite: 'strict',
             httpOnly: true
         })
-        console.log("token removed- Send code 200 ... ")
+        res.clearCookie('fc_user', {
+            sameSite: 'strict',
+            httpOnly: true
+        })
+        
+        console.log("token removed->> Send code 200 ... ")
 
-        res.status(200).json({message: 'Cookie deleted'});
+        res.status(200).json({ success: true, message: 'token removed --->' });
     }
 
 })

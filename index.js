@@ -23,7 +23,7 @@ const secret = process.env.mySecret
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost", "http://localhost:5173", "https://app.famcal.ch", "https://admin.socket.io/"], // Update these to match the client URLs
+        origin: ["http://localhost", "http://localhost:5173", "https://app.famcal.ch"], // Update these to match the client URLs
         methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
         credentials: true
     }
@@ -38,7 +38,6 @@ app.use(express.json());
 app.use(cookieParser())
 
 app.use(cors({
-    allowedHeaders: ['Content-Type', 'api_key', 'family_uuid'], // Include custom headers here
     origin: ['http://localhost', 'http://localhost:5173', "https://app.famcal.ch", "frontend"], // Or a more restrictive setting for security
     methods: "GET,PUT,PATCH,POST,DELETE",
     credentials: true,
