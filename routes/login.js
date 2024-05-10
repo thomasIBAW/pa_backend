@@ -54,7 +54,7 @@ router.post('/', (req, res) => {
                         // console.log(token)
                         res.cookie('fc_token', token, {
                             sameSite: 'strict',
-                            httpOnly: false,
+                            httpOnly: true,
                         })
             
                         res.cookie('fc_user', 

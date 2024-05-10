@@ -26,11 +26,11 @@ export async function getFamilyCheck(req, res, next) {
         else {
             // if cookie exists:
             currentFamily = JSON.parse(req.cookies.fc_user)
-            //console.log("Request user from Cookie: ", JSON.parse(req.cookies._auth_state))
+            console.log("Request user from Cookie: ", JSON.parse(req.cookies.fc_user))
         }
     } else {
         currentFamily.linkedFamily = req.headers.family_uuid
-        // console.log("Request family from Header: ", req.headers.family_uuid)
+        console.log("Request family from Header: ", req.headers.family_uuid)
     }
 
     // checks if api_key comes from Header or Cookie
@@ -42,9 +42,12 @@ export async function getFamilyCheck(req, res, next) {
         }
         else {
             // if cookie exists:
+            console.log("Received Token from Cookie")
+
             currentApiKey = req.cookies.fc_token
         }
     } else {
+        console.log("Received Token from request Header")
         currentApiKey = req.headers.api_key
     }
 
@@ -159,6 +162,7 @@ export async function verifyJWTToken (req, res, next) {
             }
             else {
                 // if cookie exists:
+
                 req.token = req.cookies.fc_token
             }
         } else {
