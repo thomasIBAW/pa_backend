@@ -30,9 +30,9 @@ router.post('/', async (req, res) => {
             created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
         const hash = bcrypt.hashSync(password, saltRounds);
-        console.log(hash)
+        //console.log(hash)
         val = new User(username, hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2, useremail)
-        console.log(val)
+        //console.log(val)
 
 
         await write(collection, val)

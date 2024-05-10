@@ -15,10 +15,10 @@ const router = express.Router();
 const collection = "todos";
 
 router.post('/', (req, res) => {
-    console.log(req)
+    //console.log(req)
     let username = req.body.username;
     let password = req.body.password;
-        console.log(username, password)
+        console.log(`Login request from user ${username} with a password`)
 
         findSome('users', {"username" : username} )
             .then((user)=> {
@@ -50,13 +50,15 @@ router.post('/', (req, res) => {
                         linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
                     function(err, token) {
                         
-                        
+                        console.log("signed Token... creating Cookies...")
+
                         // console.log(token)
                         res.cookie('fc_token', token, {
                             sameSite: 'strict',
                             httpOnly: true,
+                            secure: true
                         })
-            
+                        
                         res.cookie('fc_user', 
                         JSON.stringify({
                             username: user.username,
@@ -69,8 +71,9 @@ router.post('/', (req, res) => {
                         , {
                             sameSite: 'strict',
                             httpOnly: false,
+                            secure: true
                         })
-
+                        console.log("created ....")
                         res.status(200).json({token:token});
                     }
                     );

@@ -5,7 +5,7 @@ import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 
 import {familySchema} from "../classes/schemas.js";
-import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+import { getCookieData, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
 import 'dotenv/config'
 import {io} from "../index.js";
 
@@ -26,10 +26,7 @@ function addColl(req, res, next) {
     next()
 }
 
-
-
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
-
 router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
 
     console.log("reached the new Family router...")
@@ -38,8 +35,8 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
 
     let session_familyUuid = ""
 
-    if (req.cookies._auth_state) {
-        let authState = JSON.parse(req.cookies._auth_state)
+    if (req.cookies.fc_user) {
+        let authState = JSON.parse(req.cookies.fc_user)
         session_familyUuid = authState.linkedFamily ;
     }
     else if (req.headers.family_uuid) {
@@ -79,8 +76,9 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
 })
 
 // Endpoint to create a new item
-router.post('/', addColl, verifyJWTToken, async (req, res) =>{
+router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
 
+    console.log("reached the new Family router for FAmily Creation...")
     let session_familyUuid = ""
 
     // if (req.cookies._auth_state) {

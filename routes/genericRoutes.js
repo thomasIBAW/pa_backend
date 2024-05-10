@@ -84,7 +84,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 
 // Endpoint to create a new item
 router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
-
+    console.log("reached Generig route for Creating thatever...")
     setCollection(req.params.coll);
 
     let session_familyUuid = ""
