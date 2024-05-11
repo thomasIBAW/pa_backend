@@ -66,6 +66,21 @@ export async function findOne(coll, uuid) {
   return findResult;
 }
 
+export async function findOneById(coll, filter) {
+
+  // Use connect method to connect to the server
+  await client.connect();
+  console.log('Connected successfully to server');
+
+  const db = client.db(dbName);
+  const collection = db.collection(coll);
+
+  const findResult = await collection.find(filter).sort({dateTimeStart:1}).project({_id:0}).toArray();
+  console.log('Found document =>', findResult);
+
+  return findResult;
+}
+
 export async function patchOne(coll, uuid, data) {
 
   // Use connect method to connect to the server

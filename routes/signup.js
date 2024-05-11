@@ -1,5 +1,5 @@
 import express from "express";
-import {write} from "../connectors/dbConnector.js";
+import {findOne, findOneById, patchOne, write} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import jwt from 'jsonwebtoken';
 import date from 'date-and-time';
@@ -23,38 +23,40 @@ router.post('/', async (req, res) => {
         const user = await userSchema.validateAsync(req.body.user);
         const fam = await familySchema.validateAsync(req.body.family);
 
+
+
         let username = user.username,
             useremail = user.email || "",
             password = user.password, //to be bcrypted
             remember = user.remember || false,
-            isAdmin = user.isAdmin || false,
-            isFamilyAdmin = user.isFamilyAdmin || false,
+            isAdmin = false,
+            isFamilyAdmin = true,
             linkedPerson = user.linkedPerson || "",
             linkedFamily = user.linkedFamily || "",
             created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
         
-
-    
-
         const hash = bcrypt.hashSync(password, saltRounds);
         //console.log(hash)
         valUser = new User(username, hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2, useremail)
-        //console.log(val)
+        
+        console.log('valUser UUID : ', valUser.uuid)
 
 
         let familyName = fam.familyName,
         familyColor = fam.familyColor || ""
 
         valFamily = new Family(familyName,familyColor)
-        
+
         // Create a new user from the registration page
-        const createdUser = await write(collection, valUser)
-            .then(s => {
+        const result = await write(collection, valUser)
+            .then(async (s) => {
                 // console.log('Item created :',s)
                 console.log(`Created User is ${JSON.stringify(valUser)}`)
                 logger.info(`created a new User in ${collection} by user : ${valUser.username}`);
 
+                //const createdUser = await findOneById("users", { _id: s.insertedId });
+                return secret
             })          
 
             .catch((err) => {
@@ -63,19 +65,21 @@ router.post('/', async (req, res) => {
             })
         
 
-        console.log('userUuid is : ', createdUser.uuid)
+        console.log('userUuid is : ', valUser.uuid)
 
-        valFamily.familyAdmin = [createdUser.uuid]
-        valFamily.familyMember = [createdUser.uuid]
+        valFamily.familyAdmin = [valUser.uuid]
+        valFamily.familyMember = [valUser.uuid]
         // Add uuid of the creating user to the new Item
-        valFamily.createdBy = createdUser.uuid;
+        valFamily.createdBy = valUser.uuid;
+        
+        console.log('valFamily : ', valFamily)
 
         // Create a new family from the registration page using uuid from the createdUser
         const createdFamily = await write("family", valFamily)
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`${collection} - Created Item is ${JSON.stringify(val)}`)
-                logger.info(`created a new Family in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
+                console.log(`${collection} - Created Item is ${JSON.stringify(valFamily)}`)
+                logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
 
                 // Adding a socket message to update all open pages
                 // Socket updates a useless state on all connected clients on the pages identified by the collection.
@@ -88,15 +92,32 @@ router.post('/', async (req, res) => {
                 console.log(err)
                 res.status  (404).json(err)})
 
+        const updatedUser = await patchOne("users", valUser.uuid, {linkedFamily: valFamily.uuid})   
+            .then( s => {
+                // console.log('Item created :',s)
+                console.log(`Users - Updated User is ${JSON.stringify(valUser)}`)
+                //logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
+
+                // Adding a socket message to update all open pages
+                // Socket updates a useless state on all connected clients on the pages identified by the collection.
+                // The updated state triggers a page reload so that any new item immediately appears on the client.
+                //io.to(val.linkedFamily).emit(collection, new Date());
+
+            })
+            .catch((err) => {
+                logger.error(err)
+                console.log(err)
+                res.status  (404).json(err)}) 
+
         // Sign JWT and create Token
         jwt.sign({
-            username: currentUser.username,
-            remember: currentUser.remember,
-            isAdmin: currentUser.isAdmin,
-            isFamilyAdmin: currentUser.isFamilyAdmin,
-            linkedPerson: currentUser.linkedPerson,
-            userUuid: currentUser.uuid,
-            linkedFamily: currentUser.linkedFamily } , secret, { expiresIn: '30d' },
+            username: valUser.username,
+            remember: valUser.remember,
+            isAdmin: valUser.isAdmin,
+            isFamilyAdmin: valUser.isFamilyAdmin,
+            linkedPerson: valUser.linkedPerson,
+            userUuid: valUser.uuid,
+            linkedFamily: valFamily.uuid } , secret, { expiresIn: '30d' },
              function(err, token) {
             
             console.log("signed Token... creating Cookies...")
@@ -109,14 +130,15 @@ router.post('/', async (req, res) => {
             })
             
             res.cookie('fc_user', 
+            
             JSON.stringify({
-                username: currentUser.username,
-                remember: currentUser.remember,
-                isAdmin: currentUser.isAdmin,
-                isFamilyAdmin: currentUser.isFamilyAdmin,
-                linkedPerson: currentUser.linkedPerson,
-                userUuid: currentUser.uuid,
-                linkedFamily: currentUser.linkedFamily })
+                username: valUser.username,
+                remember: valUser.remember,
+                isAdmin: valUser.isAdmin,
+                isFamilyAdmin: valUser.isFamilyAdmin,
+                linkedPerson: valUser.linkedPerson,
+                userUuid: valUser.uuid,
+                linkedFamily: valFamily.uuid })
             , {
                 sameSite: 'strict',
                 httpOnly: false,
