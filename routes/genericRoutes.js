@@ -47,8 +47,8 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 
     let session_familyUuid = ""
 
-    if (req.cookies._auth_state) {
-        let authState = JSON.parse(req.cookies._auth_state)
+    if (req.cookies.fc_user) {
+        let authState = JSON.parse(req.cookies.fc_user)
         session_familyUuid = authState.linkedFamily ;
     }
     if (req.headers.family_uuid) {
@@ -84,14 +84,16 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 
 // Endpoint to create a new item
 router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
-    console.log("reached Generig route for Creating thatever...")
     setCollection(req.params.coll);
+    console.log(`Reached Generig route for Creating ${collection}`)
 
     let session_familyUuid = ""
+    let userId = ""
 
     if (req.cookies.fc_user) {
         let authState = JSON.parse(req.cookies.fc_user)
         session_familyUuid = authState.linkedFamily ;
+        userId = authState.uuid
     }
     if (req.headers.family_uuid) {
         session_familyUuid = req.headers.family_uuid
@@ -128,7 +130,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 console.log('Backend received calendar payload to add: ', req.body)
 
                 let subject = calendar.subject,
-                    creator = authState.uuid || "Unknown",
+                    creator = userId || "Unknown",
                     dateTimeStart = calendar.dateTimeStart,
                     dateTimeEnd = calendar.dateTimeEnd,
                     fullDay = calendar.fullDay || false ,
