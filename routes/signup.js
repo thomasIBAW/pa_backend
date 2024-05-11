@@ -110,13 +110,13 @@ router.post('/', async (req, res) => {
             
             res.cookie('fc_user', 
             JSON.stringify({
-                username: user.username,
-                remember: user.remember,
-                isAdmin: user.isAdmin,
-                isFamilyAdmin: user.isFamilyAdmin,
-                linkedPerson: user.linkedPerson,
-                userUuid: user.uuid,
-                linkedFamily: user.linkedFamily })
+                username: currentUser.username,
+                remember: currentUser.remember,
+                isAdmin: currentUser.isAdmin,
+                isFamilyAdmin: currentUser.isFamilyAdmin,
+                linkedPerson: currentUser.linkedPerson,
+                userUuid: currentUser.uuid,
+                linkedFamily: currentUser.linkedFamily })
             , {
                 sameSite: 'strict',
                 httpOnly: false,
