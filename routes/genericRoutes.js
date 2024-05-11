@@ -89,8 +89,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
     let session_familyUuid = ""
 
-    if (req.cookies._auth_state) {
-        let authState = JSON.parse(req.cookies._auth_state)
+    if (req.cookies.fc_user) {
+        let authState = JSON.parse(req.cookies.fc_user)
         session_familyUuid = authState.linkedFamily ;
     }
     if (req.headers.family_uuid) {
@@ -128,7 +128,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 console.log('Backend received calendar payload to add: ', req.body)
 
                 let subject = calendar.subject,
-                    creator = calendar.creator || "Unknown",
+                    creator = authState.uuid || "Unknown",
                     dateTimeStart = calendar.dateTimeStart,
                     dateTimeEnd = calendar.dateTimeEnd,
                     fullDay = calendar.fullDay || false ,
@@ -141,6 +141,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
                 console.log('Backend passes the following to the DB connector: ', val)
                 break;
+
             case 'people' :
                 if (!req.isUserFamilyMember) {
                     console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
@@ -245,8 +246,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
         if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
 
-            if (req.cookies._auth_state) {
-                    let authState = JSON.parse(req.cookies._auth_state)
+            if (req.cookies.fc_user) {
+                    let authState = JSON.parse(req.cookies.fc_user)
                     val.linkedFamily = authState.linkedFamily ;
                 }
             if (req.headers.family_uuid) {
