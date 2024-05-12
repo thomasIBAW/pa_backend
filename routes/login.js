@@ -10,6 +10,8 @@ import bcrypt from "bcrypt";
 // secret needed to compare login password with the hash in the DB
 // Please change the secret to any random string in the .env file
 const secret = process.env.mySecret  //to be set in Env variables
+const backend = process.env.BACKEND || "unknown"  //to be set in Env variables
+const devstate = process.env.DEVSTATE || "DEV" //to be set in Env variables
 
 const router = express.Router();
 const collection = "todos";
@@ -47,7 +49,9 @@ router.post('/', (req, res) => {
                         isFamilyAdmin: user.isFamilyAdmin,
                         linkedPerson: user.linkedPerson,
                         userUuid: user.uuid,
-                        linkedFamily: user.linkedFamily } , secret, { expiresIn: '30d' },
+                        linkedFamily: user.linkedFamily,
+                        created: user.created
+                    } , secret, { expiresIn: '30d' },
                     function(err, token) {
                         
                         console.log("signed Token... creating Cookies...")
@@ -58,7 +62,14 @@ router.post('/', (req, res) => {
                             httpOnly: true,
                             secure: true
                         })
-                        
+                        res.cookie('fc_backend_version', {
+                            version: backend,
+                            running: devstate
+                        }, {
+                            sameSite: 'strict',
+                            httpOnly: false,
+                            secure: true
+                        })
                         res.cookie('fc_user', 
                         JSON.stringify({
                             username: user.username,
@@ -74,7 +85,7 @@ router.post('/', (req, res) => {
                             secure: true
                         })
                         console.log("created ....")
-                        res.status(200).json({token:token});
+                        res.status(200).json({message:"Login successfull"});
                     }
                     );
 

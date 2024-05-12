@@ -6,6 +6,7 @@ import logoutRoutes from "./routes/logout.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
 import cookieParser from "cookie-parser";
+import meRoutes from "./routes/me.js";
 import users from "./routes/users.js";
 import cors from "cors";
 import { createServer } from "http";
@@ -57,6 +58,8 @@ app.use('/logout', logoutRoutes)
 
 //Adding a route fir signup (no token needed to create a new user and new family)
 app.use('/signup', signupRoutes)
+
+app.use('/me', meRoutes)
 
 //Adding generic route for all other requests
 app.use(genericRoutes);

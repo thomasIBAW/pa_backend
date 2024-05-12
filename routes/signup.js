@@ -117,7 +117,9 @@ router.post('/', async (req, res) => {
             isFamilyAdmin: valUser.isFamilyAdmin,
             linkedPerson: valUser.linkedPerson,
             userUuid: valUser.uuid,
-            linkedFamily: valFamily.uuid } , secret, { expiresIn: '30d' },
+            linkedFamily: valFamily.uuid,
+            created: valFamily.created
+         } , secret, { expiresIn: '30d' },
              function(err, token) {
             
             console.log("signed Token... creating Cookies...")
