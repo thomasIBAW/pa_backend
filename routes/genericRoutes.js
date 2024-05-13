@@ -5,7 +5,7 @@ import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 
 import {calendarSchema, familySchema, personSchema, tagsSchema, todoSchema, userSchema} from "../classes/schemas.js";
-import {checkDuplicates, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+import {checkDuplicates, checkUserInFamily, getFamilyCheck, identUser, verifyJWTToken} from "../middlewares/middlewares.js";
 import 'dotenv/config'
 import {io} from "../index.js";
 
@@ -40,7 +40,7 @@ function setCollection(x) {
     }
 
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
-router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
+router.post('/api/:coll/find', identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
     const body = req.body
 
@@ -88,7 +88,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 })
 
 // Endpoint to create a new item
-router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
+router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDuplicates, async (req, res) =>{
     setCollection(req.params.coll);
     logger.debug(`Reached Generig route for Creating ${collection}`)
 
@@ -268,7 +268,7 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 });
 
 // Endpoint to delete an item
-router.delete('/api/:coll/:uuid', getFamilyCheck, verifyJWTToken , checkUserInFamily,(req, res) =>{
+router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{
     setCollection(req.params.coll);
 
     deleteOne(collection, req.params.uuid)
@@ -283,7 +283,7 @@ router.delete('/api/:coll/:uuid', getFamilyCheck, verifyJWTToken , checkUserInFa
 })
 
 // Endpoint to Update am item
-router.patch('/api/:coll/:uuid', getFamilyCheck, verifyJWTToken , checkUserInFamily,(req, res) =>{
+router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{
     setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json({message:'Missing body...'})

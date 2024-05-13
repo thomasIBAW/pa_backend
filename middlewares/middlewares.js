@@ -9,6 +9,60 @@ let currentFamily = {}
 let currentApiKey = ""
 
 
+export async function identUser(req, res, next) {
+    logger.debug("reached the identUser Middleware ... ")
+
+    // checks if api_key comes from Header or Cookie
+    if (!req.headers.api_key) {
+            if (!req.cookies.fc_token) {
+                logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
+                return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
+            }
+            else {
+                // if cookie exists:
+                logger.debug("Received Token from Cookie")
+                currentApiKey = req.cookies.fc_token
+            }
+        } else {
+            logger.debug("Received Token from request Header")
+            currentApiKey = req.headers.api_key
+        }
+
+        // adding the token to the rest of the middlewares    
+        req.token = currentApiKey
+        
+        // Verify the jwt to add user info into the request workflow
+        jwt.verify(currentApiKey, secret, async function(err, decoded) {
+            if (err) {
+                logger.error(`${req.params.coll} - middlewares.js / verifyJWTToken /, Error during token verification - ${err}`);
+                // console.log(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
+                return res.status(500).json({message: 'Error during token verification.'});
+            }
+            if (decoded) {
+                //console.log('Endpoint Authenticated successful! user: ', decoded.username);
+                logger.info(`${req.params.coll} - User <${decoded.username}> successfully Authenticated to endpoint`)
+    
+                //if user is not Admin, restrict to only FamilyAdmin users
+                if (decoded.isAdmin) {
+                    req.isAdmin = true
+                    logger.debug(`the requesting user : ${decoded.username} is identified as server admin.`)
+                }
+    
+                req.decoded = decoded
+
+                logger.debug(`verifyJWTToken successful -  ${decoded}`)
+                
+            }
+            else {
+                logger.error(`User <${decoded.username}> - Authentication failed - Wrong token!`)
+                res.status(401).json(`User <${decoded.username}> - Authentication failed - Wrong token!`);
+            }
+        })
+
+    next()
+}
+
+
 export async function getCookieData(req, res, next) {
     logger.debug("reached the getCookieData Middleware ... ")
 

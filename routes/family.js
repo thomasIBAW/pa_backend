@@ -5,7 +5,7 @@ import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 
 import {familySchema} from "../classes/schemas.js";
-import { getCookieData, checkUserInFamily, getFamilyCheck, verifyJWTToken} from "../middlewares/middlewares.js";
+import { getCookieData, checkUserInFamily, getFamilyCheck, verifyJWTToken, identUser} from "../middlewares/middlewares.js";
 import 'dotenv/config'
 import {io} from "../index.js";
 
@@ -27,7 +27,7 @@ function addColl(req, res, next) {
 }
 
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
-router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
+router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (req, res) =>{
 
     logger.debug("reached the new Family router...")
 
@@ -74,7 +74,7 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
 })
 
 // Endpoint to create a new item
-router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
+router.post("/", addColl, identUser, getCookieData,  async (req, res) =>{
 
     logger.debug("reached the new Family router for FAmily Creation...")
     let session_familyUuid = ""
@@ -151,7 +151,7 @@ router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
 });
 
 // Endpoint to delete an item
-router.delete('/:uuid', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
+router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
 
     deleteOne(req.params.coll, req.params.uuid)
         .then((d) => {
@@ -165,7 +165,7 @@ router.delete('/:uuid', addColl, getFamilyCheck, verifyJWTToken , checkUserInFam
 })
 
 // Endpoint to Update am item
-router.patch('/:uuid', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
+router.patch('/:uuid', addColl,identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json({ message: 'Missing body...'})
