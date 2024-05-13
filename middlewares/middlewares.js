@@ -10,7 +10,7 @@ let currentApiKey = ""
 
 
 export async function getCookieData(req, res, next) {
-    console.log("reached the getCookieData Middleware ... ")
+    logger.debug("reached the getCookieData Middleware ... ")
 
     // if (!req.headers.family_uuid) {
     //     if (!req.cookies.fc_user) {
@@ -32,18 +32,17 @@ export async function getCookieData(req, res, next) {
     // checks if api_key comes from Header or Cookie
     if (!req.headers.api_key) {
         if (!req.cookies.fc_token) {
-            console.log(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
             logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
             return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
         }
         else {
             // if cookie exists:
-            console.log("Received Token from Cookie")
+            logger.debug("Received Token from Cookie")
 
             currentApiKey = req.cookies.fc_token
         }
     } else {
-        console.log("Received Token from request Header")
+        logger.debug("Received Token from request Header")
         currentApiKey = req.headers.api_key
     }
 
@@ -61,7 +60,7 @@ export async function getFamilyCheck(req, res, next) {
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
         if (!req.cookies.fc_user) {
-            console.log(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
+            // logger.debug(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
             return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
             //throw new Error("- getFamilyCheck - no family_uuid received from the query ! Aborted...")
@@ -69,28 +68,28 @@ export async function getFamilyCheck(req, res, next) {
         else {
             // if cookie exists:
             currentFamily = JSON.parse(req.cookies.fc_user)
-            console.log("Request user from Cookie: ", JSON.parse(req.cookies.fc_user))
+            logger.debug("Requesting user from Cookie: ", JSON.parse(req.cookies.fc_user))
         }
     } else {
         currentFamily.linkedFamily = req.headers.family_uuid
-        console.log("Request family from Header: ", req.headers.family_uuid)
+        logger.debug("Requesting family from Header: ", req.headers.family_uuid)
     }
 
     // checks if api_key comes from Header or Cookie
     if (!req.headers.api_key) {
         if (!req.cookies.fc_token) {
-            console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request headeror cookie`)
+            // console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request headeror cookie`)
             logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header or cookie`)
             return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header or cookie`})
         }
         else {
             // if cookie exists:
-            console.log("Received Token from Cookie")
+            logger.debug("Received Token from Cookie")
 
             currentApiKey = req.cookies.fc_token
         }
     } else {
-        console.log("Received Token from request Header")
+        logger.debug("Received Token from request Header")
         currentApiKey = req.headers.api_key
     }
 
@@ -98,7 +97,7 @@ export async function getFamilyCheck(req, res, next) {
     /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created */
 
-    console.log(req.params.coll, ' - Request has reached the "getFamilyCheck" middleware, Requested Family: ' , currentFamily.linkedFamily )
+    logger.debug(`${req.params.coll} - Request has reached the "getFamilyCheck" middleware, Requested Family: ${currentFamily.linkedFamily}`)
 
 
     if (req.params.coll !== 'users'){
@@ -106,21 +105,20 @@ export async function getFamilyCheck(req, res, next) {
             .then( (family) => {
 
                 if (family.length === 0) {
-                    logger.warn(req.params.coll, ' - getFamilyCheck - No family found. Check for "family_uuid" in the Request header')
-                    res.status(401).json(req.params.coll, ' - getFamilyCheck - No family found.  Check for "family_uuid" in the Request header')
+                    logger.error(`${req.params.coll} - getFamilyCheck - No family found. Check for "family_uuid" in the Request header`)
+                    res.status(401).json(`${req.params.coll} - getFamilyCheck - No family found.  Check for "family_uuid" in the Request header`)
                 }
                 else {
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
                     req.token = currentApiKey
-                    console.log('getFamilyCheck successful')
+                    logger.debug('getFamilyCheck successful')
                     next()
                 }
             })
             .catch((err) => {
-                logger.error(err)
-                console.log(req.params.coll, ' - error in middleware getFamilyCheck', req.headers.family_uuid)
+                logger.error(`${req.params.coll} - error in middleware getFamilyCheck - ${rew.headers.family_uuid} - ${err}`)
                 res.status(404).json(err)
             })
     } else next()
@@ -130,7 +128,7 @@ export async function checkUserInFamily(req, res, next) {
 
     /*   this middleware checks if the currently logged in user (requester) has admin rights or is member in a family*/
 
-    console.log(req.params.coll, ' - Request has reached "checkUserInFamily" middleware')
+    logger.debug(`${req.params.coll} - Request has reached "checkUserInFamily" middleware`)
 
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
@@ -140,7 +138,7 @@ export async function checkUserInFamily(req, res, next) {
         isUserFamilyMember = req.familyMember.includes(req.decoded.userUuid)
         req.isUserFamilyAdmin = isUserFamilyAdmin
         req.isUserFamilyMember = isUserFamilyMember
-        console.log('checkUserInFamily successful')
+        logger.debug('checkUserInFamily successful')
         next()
     }
     else next()
@@ -148,32 +146,31 @@ export async function checkUserInFamily(req, res, next) {
 
 export async function checkDuplicates (req, res, next) {
 
-    console.log(req.params.coll, ' - Request has reached checkDuplicates middleware')
+    logger.debug(req.params.coll, ' - Request has reached checkDuplicates middleware')
 
     if (req.params.coll === 'users'){
         // console.log('reached Middleware...', req.params.coll, req.body.username)
             await findSome('users', { "username" : `${req.body.username}`} )
                 .then( (user) => {
                     if (user.length === 0) {
-                        console.log('checkDuplicates successful')
+                        logger.debug('checkDuplicates successful')
                         next()
                     }
                     else {
-                        console.log(user)
-                        logger.warn('Duplicated username. Cannot create item')
+                        // console.log(user)
+                        logger.warn('Duplicated username. Cannot create item', user)
                         return res.status(403).json('Duplicated username. Cannot create item')
                     }
                 })
                 .catch((err) => {
-                    logger.error(err)
-                    console.log('error in middleware checkDuplicates')
+                    logger.error('error in middleware checkDuplicates', err)
 
                     res.status(404).json(err)
                 })
         }
     else if (req.params.coll === 'family'){
 
-        console.log('reached Middleware...')
+        logger.debug('reached Middleware...')
 
         await findSome('family', { "familyName" : `${req.body.familyName}`} )
             .then( (fam) => {
@@ -181,13 +178,13 @@ export async function checkDuplicates (req, res, next) {
                     next()
                 }
                 else {
-                    logger.warn('Duplicated family name. Cannot create item')
+                    logger.error('Duplicated family name. Cannot create item')
                     return res.status(403).json({ message: 'Duplicated family name. Cannot create item'})
                 }
             })
             .catch((err) => {
-                logger.error('middlewares.js / Family /',err)
-                console.log('error in middleware getFamilyCheck findSome call')
+                logger.error(`middlewares.js / Family / ${err}`)
+                // console.log('error in middleware getFamilyCheck findSome call')
                 res.status(404).json(err)
             })
         }
@@ -199,7 +196,7 @@ export async function verifyJWTToken (req, res, next) {
         // checks if api_key comes from Header or Cookie
         if (!req.headers.api_key) {
             if (!req.cookies.fc_token) {
-                console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
+                // console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
                 logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header`)
                 return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
             }
@@ -213,17 +210,17 @@ export async function verifyJWTToken (req, res, next) {
         }
     }
 
-    console.log(req.params.coll, ' - Request has reached the "verifyJWTToken" middleware')
+    logger.debug(`${req.params.coll} - Request has reached the "verifyJWTToken" middleware`)
 
     jwt.verify(req.token, secret, async function(err, decoded) {
         if (err) {
-            logger.error(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
-            console.log(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
+            logger.error(`${req.params.coll} - middlewares.js / verifyJWTToken /, Error during token verification - ${err}`);
+            // console.log(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
             return res.status(500).json('Error during token verification.');
         }
         if (decoded) {
             //console.log('Endpoint Authenticated successful! user: ', decoded.username);
-            logger.info(req.params.coll, ` - User <${decoded.username}> successfully Authenticated to endpoint`)
+            logger.info(`${req.params.coll} - User <${decoded.username}> successfully Authenticated to endpoint`)
 
             //if user is not Admin, restrict to only FamilyAdmin users
             // if (!decoded.isAdmin) {
@@ -234,10 +231,10 @@ export async function verifyJWTToken (req, res, next) {
             //     }
             // }
 
-            console.log(`My user uuid: ${decoded.userUuid}. All Admins in current Family are: ${req.familyAdmin}`)
+            logger.debug(`My user uuid: ${decoded.userUuid}. All Admins in current Family are: ${req.familyAdmin}`)
 
             req.decoded = decoded
-            console.log('verifyJWTToken successful')
+            logger.debug('verifyJWTToken successful')
             next()
             // Code to be executed here:
         }

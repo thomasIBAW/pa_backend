@@ -12,6 +12,7 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
+
 import 'dotenv/config'
 
 import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
@@ -20,6 +21,7 @@ import {getFamilyCheck, verifyJWTToken} from "./middlewares/middlewares.js";
 const app = express();
 const port = process.env.port || 3005;
 const secret = process.env.mySecret
+const backend = process.env.BACKEND || "unknown"  //to be set in Env variables
 
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
@@ -33,7 +35,7 @@ export const io = new Server(httpServer, {
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
     throw new Error('Missing mySecret in .env file. See github wiki for details.');
-} else (console.log('mySecret found in .env file'))
+} else (logger.info('mySecret found in .env file at backend start.'))
 
 app.use(express.json());
 app.use(cookieParser())
@@ -85,16 +87,16 @@ app.use((err, req, res, next) => {
 
 
 io.on("connection", (socket) => {
-    console.log(socket.id); // Log the socket ID
+    logger.debug(`Socket connection opened - Socket id: ${socket.id}`); // Log the socket ID
     socket.on('join_room', (room) => {
         socket.join(room);
-        console.log(`Socket ${socket.id} joined room ${room}`);
+        logger.debug(`Socket ${socket.id} joined room ${room}`);
     });
 });
 
 
 
 httpServer.listen(port, () => {
-    console.log(`Server listening on port ${port}...`)
+    logger.info(`Server ${backend} started. Listening on port ${port}...`)
 })
 

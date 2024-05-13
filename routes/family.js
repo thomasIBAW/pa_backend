@@ -21,7 +21,7 @@ let collection = "family";
 function addColl(req, res, next) {
 
     //   adding coll value because missing in family route
-    console.log("adding 'Family' as coll param to the request")
+    logger.debug("adding 'Family' as coll param to the request")
     req.params.coll = "family"
     next()
 }
@@ -29,7 +29,7 @@ function addColl(req, res, next) {
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
 router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
 
-    console.log("reached the new Family router...")
+    logger.debug("reached the new Family router...")
 
     const body = req.body ;
 
@@ -43,7 +43,6 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
         session_familyUuid = req.headers.family_uuid
     }
     else {
-        console.log(`${collection} - no family_uuid received from the query ! Aborted...`)
         logger.warn(`${collection} - no family_uuid received from the query ! Aborted...`)
         return res.status(401).json({ message: 'no family_uuid received from the query ! Aborted...'})
     }
@@ -54,7 +53,6 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
         if(req.isUserFamilyMember) {
             body.linkedFamily = session_familyUuid
         } else {
-            console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
             logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
             return res.status(401).json({ message: `not a family member`})
         }
@@ -78,7 +76,7 @@ router.post('/find', addColl, getFamilyCheck, verifyJWTToken , checkUserInFamily
 // Endpoint to create a new item
 router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
 
-    console.log("reached the new Family router for FAmily Creation...")
+    logger.debug("reached the new Family router for FAmily Creation...")
     let session_familyUuid = ""
 
     // if (req.cookies._auth_state) {
@@ -115,7 +113,7 @@ router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
 
         val = new Family(familyName,familyColor)
 
-        console.log('userUuid is : ', req.decoded.userUuid)
+        logger.debug(`userUuid is : ${req.decoded.userUuid}`)
 
         val.familyAdmin = [req.decoded.userUuid]
         val.familyMember = [req.decoded.userUuid]
@@ -126,7 +124,6 @@ router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
         await write(collection, val )
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`${collection} - Created Item is ${JSON.stringify(val)}`)
                 logger.info(`created a new Family in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
                 // Adding a socket message to update all open pages
@@ -141,13 +138,12 @@ router.post("/", addColl, getCookieData, verifyJWTToken, async (req, res) =>{
             })
             .catch((err) => {
                 logger.error(err)
-                console.log(err)
                 res.status(404).json(err)})
 
     }
     catch (err) {
         logger.error(err)
-        console.log('Error in middlewares.js, on the post item function',err)
+        console.log(`Error in middlewares.js, on the post item function - ${err.message}`)
 
         res.status(404).json(err.message)
     }

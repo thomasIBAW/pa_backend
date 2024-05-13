@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
     //console.log(req)
     let username = req.body.username;
     let password = req.body.password;
-        console.log(`Login request from user ${username} with a password`)
+        logger.info(`Login request from user ${username} with a password`)
 
         findSome('users', {"username" : username} )
             .then((user)=> {
@@ -29,17 +29,15 @@ router.post('/', (req, res) => {
                     return res.status(404).send('User not found.');
                 }
                 user = user[0];
-                console.log(user)
+                logger.debug(user)
 
                 bcrypt.compare( password , user.password, function (err, result) {
                     if (err) {
-                        console.error('An error occurred. Username Password mismatch:', err);
-                        logger.error(`An error occurred. Username Password mismatch - User: ${username}`)
+                        logger.error(`An error occurred. Username Password mismatch - User: ${username} - ${err}`)
                         return res.status(500).send('An error occurred. Username Password mismatch');
                 }
 
                 if (result) {
-                    console.log('Authentication successful!');
                     logger.info(`User <${user.username}> <${user.uuid}>successfully Authenticated!`)
 
                     jwt.sign({
@@ -54,7 +52,7 @@ router.post('/', (req, res) => {
                     } , secret, { expiresIn: '30d' },
                     function(err, token) {
                         
-                        console.log("signed Token... creating Cookies...")
+                        logger.debug("signed Token... creating Cookies...")
 
                         // console.log(token)
                         res.cookie('fc_token', token, {
@@ -84,7 +82,7 @@ router.post('/', (req, res) => {
                             httpOnly: false,
                             secure: true
                         })
-                        console.log("created ....")
+                        logger.debug("created ....")
                         res.status(200).json({message:"Login successfull"});
                     }
                     );

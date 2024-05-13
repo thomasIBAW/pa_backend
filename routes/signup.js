@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
         let valUser = {}
         let valFamily = {}
 
-        console.log('Received Body from the request is : ',req.body)
+        logger.info(`Received signup request from client - ${req.body}`)
         const user = await userSchema.validateAsync(req.body.user);
         const fam = await familySchema.validateAsync(req.body.family);
 
@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
         //console.log(hash)
         valUser = new User(username, hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2, useremail)
         
-        console.log('valUser UUID : ', valUser.uuid)
+        logger.debug('valUser UUID : ', valUser.uuid)
 
 
         let familyName = fam.familyName,
@@ -52,8 +52,8 @@ router.post('/', async (req, res) => {
         const result = await write(collection, valUser)
             .then(async (s) => {
                 // console.log('Item created :',s)
-                console.log(`Created User is ${JSON.stringify(valUser)}`)
                 logger.info(`created a new User in ${collection} by user : ${valUser.username}`);
+                logger.debug(`Created User is ${JSON.stringify(valUser)}`)
 
                 //const createdUser = await findOneById("users", { _id: s.insertedId });
                 return secret
@@ -65,21 +65,21 @@ router.post('/', async (req, res) => {
             })
         
 
-        console.log('userUuid is : ', valUser.uuid)
+        logger.debug(`The ner userUuid is : ${valUser.uuid}`)
 
         valFamily.familyAdmin = [valUser.uuid]
         valFamily.familyMember = [valUser.uuid]
         // Add uuid of the creating user to the new Item
         valFamily.createdBy = valUser.uuid;
         
-        console.log('valFamily : ', valFamily)
+        logger.debug(`... new Family to be created: ${valFamily}`)
 
         // Create a new family from the registration page using uuid from the createdUser
         const createdFamily = await write("family", valFamily)
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`${collection} - Created Item is ${JSON.stringify(valFamily)}`)
                 logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
+                // logger.debug(`${collection} - Created Item is ${JSON.stringify(valFamily)}`)
 
                 // Adding a socket message to update all open pages
                 // Socket updates a useless state on all connected clients on the pages identified by the collection.
@@ -89,13 +89,12 @@ router.post('/', async (req, res) => {
             })
             .catch((err) => {
                 logger.error(err)
-                console.log(err)
                 res.status  (404).json(err)})
 
         const updatedUser = await patchOne("users", valUser.uuid, {linkedFamily: valFamily.uuid})   
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`Users - Updated User is ${JSON.stringify(valUser)}`)
+                logger.debug(`Users - Updated User is ${JSON.stringify(valUser)}`)
                 //logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
 
                 // Adding a socket message to update all open pages
@@ -106,7 +105,6 @@ router.post('/', async (req, res) => {
             })
             .catch((err) => {
                 logger.error(err)
-                console.log(err)
                 res.status  (404).json(err)}) 
 
         // Sign JWT and create Token
@@ -122,7 +120,7 @@ router.post('/', async (req, res) => {
          } , secret, { expiresIn: '30d' },
              function(err, token) {
             
-            console.log("signed Token... creating Cookies...")
+            logger.debug("signed Token... creating Cookies...")
 
             // console.log(token)
             res.cookie('fc_token', token, {
@@ -132,7 +130,6 @@ router.post('/', async (req, res) => {
             })
             
             res.cookie('fc_user', 
-            
             JSON.stringify({
                 username: valUser.username,
                 remember: valUser.remember,
@@ -146,7 +143,8 @@ router.post('/', async (req, res) => {
                 httpOnly: false,
                 secure: true
             })
-            console.log("created ....")
+            logger.debug("Cookies have been created ....")
+            logger.info(`New user has been created and is logged in.`)
             res.status(200).json({message:"Created and Logged In..."});
         });
             

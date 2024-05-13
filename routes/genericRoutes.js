@@ -40,7 +40,6 @@ function setCollection(x) {
     }
 
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
-
 router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
     const body = req.body
@@ -61,13 +60,19 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
         if(req.isUserFamilyMember) {
         body.linkedFamily = session_familyUuid
         } else {
-            console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-            logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
+            logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
             return res.status(401).json(`not a family member`)
         }
+    } else {
+        if(req.isUserFamilyMember) {
+            body.linkedFamily = session_familyUuid
+            } else {
+                logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
+                return res.status(401).json(`not a family member`)
+            }
     }
 
-    console.log(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
+    logger.debug(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
 
     findSome(collection, body)
         .then((d) => {
@@ -85,7 +90,7 @@ router.post('/api/:coll/find', getFamilyCheck, verifyJWTToken , checkUserInFamil
 // Endpoint to create a new item
 router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, checkDuplicates, async (req, res) =>{
     setCollection(req.params.coll);
-    console.log(`Reached Generig route for Creating ${collection}`)
+    logger.debug(`Reached Generig route for Creating ${collection}`)
 
     let session_familyUuid = ""
     let userId = ""
@@ -120,14 +125,13 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
         switch (req.params.coll) {
             case 'calendar' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
 
                 const calendar = await calendarSchema.validateAsync(req.body)
 
-                console.log('Backend received calendar payload to add: ', req.body)
+                logger.info('Backend received calendar payload to add: ', req.body)
 
                 let subject = calendar.subject,
                     creator = userId || "Unknown",
@@ -141,12 +145,11 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                     created = date.format(new Date(), 'YYYY-MM-DDTHH:mm')
 
                 val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
-                console.log('Backend passes the following to the DB connector: ', val)
+                logger.debug(`Backend passes the following to the DB connector: ${val}`)
                 break;
 
             case 'people' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
@@ -172,9 +175,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
             case 'tags' :
 
                 if (!req.isUserFamilyMember) {
-                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({message:`not a family member`})
                 }
 
                 const tag = await tagsSchema.validateAsync(req.body)
@@ -200,7 +202,6 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
                 break;
             case 'todos' :
                 if (!req.isUserFamilyMember) {
-                    console.log(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json(`not a family member`)
                 }
@@ -223,26 +224,8 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
 
                 break;
 
-                //Users to be removed ans moved to signup router ... tbc
-            // case 'users' :
-            //     const user = await userSchema.validateAsync(req.body);
-            //     let username = user.username,
-            //         useremail = user.email || "",
-            //         password = user.password, //to be bcrypted
-            //         remember = user.remember || false ,
-            //         isAdmin = user.isAdmin || false,
-            //         isFamilyAdmin = user.isFamilyAdmin || false,
-            //         linkedPerson = user.linkedPerson || "",
-            //         linkedFamily = user.linkedFamily || "",
-            //         created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
-            //
-            //     const hash = bcrypt.hashSync(password, saltRounds);
-            //     console.log(hash)
-            //     val = new User(username , hash, remember, isAdmin, isFamilyAdmin, linkedPerson, linkedFamily, created2 , useremail)
-            //     console.log(val)
-            //     break;
             case 'default' : {
-                res.status(404).json(`Not existing endpoint ${req.params.coll}`)
+                res.status(404).json({message:`Not existing endpoint ${req.params.coll}`})
             }
         }
 
@@ -262,29 +245,23 @@ router.post('/api/:coll', getFamilyCheck, verifyJWTToken, checkUserInFamily, che
         await write(collection, val )
             .then( s => {
                 // console.log('Item created :',s)
-                console.log(`${collection} - Created Item is ${JSON.stringify(val)}`)
                 logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
                 // Adding a socket message to update all open pages
                 // Socket updates an useless state on all connected clients on the pages identified by the collection.
                 // The updated state triggers a page reload so that any new item immediately appears on the client.
                 io.to(val.linkedFamily).emit(collection, new Date());
-
-
                 // sending result to client
                 res.status(200).json(val)
 
             })
             .catch((err) => {
                 logger.error(err)
-                console.log(err)
                 res.status(404).json(err)})
 
         }
     catch (err) {
-        logger.error(err)
-        console.log('Error in middlewares.js, on the post item function',err)
-
+        logger.error(`Error in middlewares.js, on the post item function - ${err}`)
         res.status(404).json(err.message)
     }
 

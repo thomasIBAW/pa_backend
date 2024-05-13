@@ -2,10 +2,8 @@ import express from "express";
 import {write, findAll, findOne, deleteOne, patchOne, findSome} from "../connectors/dbConnector.js";
 import {logger} from '../middlewares/loggers.js'
 import jwt from 'jsonwebtoken';
-import date from 'date-and-time';
-import { todoSchema } from "../classes/schemas.js";
+
 import 'dotenv/config'
-import bcrypt from "bcrypt";
 
 // secret needed to compare login password with the hash in the DB
 // Please change the secret to any random string in the .env file
@@ -17,10 +15,10 @@ const collection = "users";
 router.get('/', (req, res) => {
     //console.log(req)
     
-        console.log(`/ME request from user `)
+        logger.debug(`/ME request from user `)
 
         if (!req.cookies.fc_token) {
-            console.log("no Token provided to /me endpoint")
+            logger.warn("no Token provided to /me endpoint")
             res.status(401).json({message: "no secure cookie provided"})
             }
 
@@ -29,11 +27,11 @@ router.get('/', (req, res) => {
             jwt.verify(token, secret, function(err, decoded) {
 
                 if(err) {
-                    console.log("jwt not verified!")
+                    logger.warn("jwt not verified!")
                     res.status(401).json({message:"not Verified"})
                 }
 
-                console.log(decoded) // bar
+                logger.debug(JSON.stringify(decoded)) // bar
                 res.status(200).json(decoded)
               });        
         }
