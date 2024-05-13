@@ -1,4 +1,5 @@
 import express from "express";
+import {logger} from '../middlewares/loggers.js'
 
 import 'dotenv/config'
 

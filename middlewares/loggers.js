@@ -5,6 +5,8 @@ import callsite from 'callsites';
 
 
 const backend = process.env.BACKEND || "unknown"  //to be set in Env variables
+const loglevel = process.env.LOG_LEVEL || "info"  //to be set in Env variables
+const consolelevel = process.env.CONS_LOG_LEVEL || "info"  //to be set in Env variables
 
 
 const myCustomLevels = {
@@ -68,7 +70,7 @@ export const logger = createLogger({
     defaultMeta: { S: 'backend', V: backend },
     transports: [
       new transports.File({ filename: './logs/error_LevelLogs.log', level: 'error' }),
-      new transports.File({ filename: './logs/info_LevelLogs.log' }),
+      new transports.File({ filename: './logs/info_LevelLogs.log', level: loglevel }),
 
       // Optionally add console transport
       new transports.Console({
@@ -80,7 +82,7 @@ export const logger = createLogger({
                     // return `${level} - ${message} - ${meta && Object.keys(meta).length ? JSON.stringify(meta) : ''} [${file}:${line}]`
                 }) 
             )
-            , level:'debug'
+            , level:consolelevel
         })
     ]
   });
