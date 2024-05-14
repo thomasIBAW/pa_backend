@@ -265,52 +265,78 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
 router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{
     setCollection(req.params.coll);
 
+    if (!req.body) return res.status(404).json({message:'Missing body...'})
     let body = {uuid : req.params.uuid}
 
     if (req.isAdmin) {
         // Add logic for Server Admin (can remove every appoointment)
-        deleteItem()
+                logger.debug("SERVER ADMIN - start delete process...")
+                deleteOne(collection, req.params.uuid)
+                .then((d) => {
+                    logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
+                    res.status(200).json(d)
+                })
+                .catch((err) => {
+                    logger.error(err)
+                    res.status(404).json(err)})
+            
 
     } else if (req.isUserFamilyAdmin) {
         // Add Logic for Family Admin (Can remove all family rel. Appoitnments)
-        const res = getItem()
-        const item = res.json()
-
-        //check if requestingf user is in family Admin list: 
-        if (item.linkedFamily != req.family.uuid) {
-            logger.warn(`User ${req.decoded.username} has no permission to delete item (not in Family) `)
-            res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
-        } else {
-            deleteItem()
-        }
+        findSome(collection, {uuid:req.params.uuid})
+        .then((d) => {
+            //check if requestingf user is in family Admin list: 
+            if (d[0].linkedFamily !== req.family.uuid) {
+                logger.warn(`User ${req.decoded.username} has no permission to delete item (not in Family) `)
+                res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
+            } else {
+                logger.debug("FAMILY ADMIN - start delete process...")
+                deleteOne(collection, req.params.uuid)
+                .then((d) => {
+                    logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
+                    res.status(200).json(d)
+                })
+                .catch((err) => {
+                    logger.error(err)
+                    res.status(404).json(err)})
+            }
+        })
+        .catch((err) => {
+            logger.error(err)
+            res.status(404).json(err)
+    })
 
     } else if (req.isUserFamilyMember) {
         // Add Logic for Family Members (can remove only own appointments)
-        const res = getItem()
-        const item = res.json()
+      
+        findSome(collection, {uuid:req.params.uuid})
 
-        if (item.createdBy != req.decoded.userUuid) {
-            logger.warn(`User ${req.decoded.username} has no permission to delete item `)
-            res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
-        } else {
-            deleteItem()
-        }
-
+        .then((d) => {
+  
+            if (d[0].createdBy !== req.decoded.userUuid) {
+                logger.warn(`User ${req.decoded.username} has no permission to delete item `)
+                res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
+            } 
+            else {
+                logger.debug("start delete process...")
+                deleteOne(collection, req.params.uuid)
+                .then((d) => {
+                    logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
+                    res.status(200).json(d)
+                })
+                .catch((err) => {
+                    logger.error(err)
+                    res.status(404).json(err)})
+            }
+        })
+        .catch((err) => {
+            logger.error(err)
+            res.status(404).json(err)
+        })
     } else {
         logger.warn(`User ${req.decoded.username} has no permission to delete item `)
         res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
     }
-
-  
-            deleteOne(collection, req.params.uuid)
-            .then((d) => {
-                logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
-                res.status(200).json(d)
-            })
-            .catch((err) => {
-                logger.error(err)
-                res.status(404).json(err)})
-        
 })
 
 // Endpoint to Update am item
