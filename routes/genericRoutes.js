@@ -44,7 +44,11 @@ router.post('/api/:coll/find', identUser, getFamilyCheck, checkUserInFamily, (re
     setCollection(req.params.coll);
     const body = req.body
 
-        /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family */
+     /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family 
+     Correction : also admin will only find family related items.
+     */
+
+
     if (!req.isAdmin) {
         if(req.isUserFamilyMember) {
         body.linkedFamily = req.family.uuid
@@ -77,37 +81,16 @@ router.post('/api/:coll/find', identUser, getFamilyCheck, checkUserInFamily, (re
 })
 
 // Endpoint to create a new item
-router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDuplicates, async (req, res) =>{
+router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (req, res) =>{
     setCollection(req.params.coll);
-    logger.debug(`Reached Generig route for Creating ${collection}`)
+
+    logger.debug(`Reached GenericRouter for Creating ${collection}`)
 
     let session_familyUuid = req.family.uuid
-    let userId = ""
 
-    // if (req.cookies.fc_user) {
-    //     let authState = JSON.parse(req.cookies.fc_user)
-    //     session_familyUuid = authState.linkedFamily ;
-    //     userId = authState.uuid
-    // }
-    // if (req.headers.family_uuid) {
-    //     session_familyUuid = req.headers.family_uuid
-    // }
+    let userId = req.decoded.username
 
-
-    //let authState = JSON.parse(req.cookies._auth_state) || ""
-    //let session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
-    //
-    // console.log(`
-    // Details about current API call:
-    // endpoint : ${req.params.coll}
-    // logged in user: ${req.decoded.username}
-    // (isAdmin : ${req.decoded.isAdmin})
-    // (isFamilyAdmin : ${req.isUserFamilyAdmin})
-    // (isFamilyMember : ${req.isUserFamilyMember})
-    // Family name is : ${req.family.familyName}
-    // FamilyUuid : ${session_familyUuid}
-    // `)
-
+ 
     try {
         let val = {};
 
@@ -115,7 +98,7 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
             case 'calendar' :
                 if (!req.isUserFamilyMember) {
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({message:`not a family member`})
                 }
 
                 const calendar = await calendarSchema.validateAsync(req.body)
@@ -140,7 +123,7 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
             case 'people' :
                 if (!req.isUserFamilyMember) {
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-                    return res.status(401).json(`not a family member`)
+                    return res.status(401).json({message:`not a family member`})
                 }
 
                 let person = await personSchema.validateAsync(req.body)
@@ -153,13 +136,6 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
 
                 val = new Person(firstName, lastName, nickName, dob, email)
 
-                //Add current family to Persona
-                val.linkedFamily = session_familyUuid
-
-                // if (!decoded.isAdmin && !decoded.isFamilyAdmin) {
-                //     logger.error('Not an Admin. Cannot create persona')
-                //     return res.status(401).json('Not an Admin. Cannot create persona')
-                // }
                 break;
 
             case 'tags' :
@@ -211,8 +187,6 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
 
                 val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
 
-
-
                 break;
 
             case 'default' : {
@@ -221,19 +195,9 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
         }
 
         if ((req.params.coll !== "family") && (req.params.coll !== "users")) {
+                 val.linkedFamily = req.family.uuid
+                }
 
-            val.linkedFamily = req.family.uuid
-
-            // if (req.cookies.fc_user) {
-
-            //         let authState = JSON.parse(req.cookies.fc_user)
-            //         val.linkedFamily = authState.linkedFamily ;
-            //     }
-            // if (req.headers.family_uuid) {
-            //         val.linkedFamily = req.headers.family_uuid
-            //     }
-
-            }
         val.createdBy = req.decoded.userUuid; // Add uuid of the creating user to the new Item
 
         await write(collection, val )
@@ -259,7 +223,6 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily, checkDup
         res.status(404).json(err.message)
     }
 });
-
 
 // Endpoint to delete an item
 router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{

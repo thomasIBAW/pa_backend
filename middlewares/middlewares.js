@@ -168,7 +168,6 @@ export async function checkDuplicates (req, res, next) {
     logger.debug(req.params.coll, ' - Request has reached checkDuplicates middleware')
 
     if (req.params.coll === 'users'){
-        // console.log('reached Middleware...', req.params.coll, req.body.username)
             await findSome('users', { "username" : `${req.body.username}`} )
                 .then( (user) => {
                     if (user.length === 0) {
@@ -177,8 +176,8 @@ export async function checkDuplicates (req, res, next) {
                     }
                     else {
                         // console.log(user)
-                        logger.warn('Duplicated username. Cannot create item', user)
-                        return res.status(403).json('Duplicated username. Cannot create item')
+                        logger.warn(`Duplicated username. Cannot create item ${JSON.stringify(user)}`)
+                        return res.status(403).json({message:'Duplicated username. Cannot create item'})
                     }
                 })
                 .catch((err) => {
@@ -186,26 +185,6 @@ export async function checkDuplicates (req, res, next) {
 
                     res.status(404).json(err)
                 })
-        }
-    else if (req.params.coll === 'family'){
-
-        logger.debug('reached Middleware...')
-
-        await findSome('family', { "familyName" : `${req.body.familyName}`} )
-            .then( (fam) => {
-                if (fam.length === 0) {
-                    next()
-                }
-                else {
-                    logger.error('Duplicated family name. Cannot create item')
-                    return res.status(403).json({ message: 'Duplicated family name. Cannot create item'})
-                }
-            })
-            .catch((err) => {
-                logger.error(`middlewares.js / Family / ${err}`)
-                // console.log('error in middleware getFamilyCheck findSome call')
-                res.status(404).json(err)
-            })
         }
     else next()
 }
