@@ -301,19 +301,7 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
         res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
     }
 
-    const getItem = async() => {
-        findSome(collection, body)
-        .then((d) => {
-            logger.debug(`${collection} - Received a list request from User ${req.decoded.username}`);
-            return d
-        })
-        .catch((err) => {
-            logger.error(err)
-            res.status(404).json(err)
-        })
-        }
-
-    const deleteItem = async () => {
+  
             deleteOne(collection, req.params.uuid)
             .then((d) => {
                 logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
@@ -322,7 +310,7 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
-        }
+        
 })
 
 // Endpoint to Update am item
@@ -332,37 +320,40 @@ router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(r
     if (!req.body) return res.status(404).json({message:'Missing body...'})
 
 
-    async function getItem(c, b) {
-        findSome(c, {uuid:b})
-        .then((d) => {
-            logger.debug(`${collection} - dev_ ${JSON.stringify(c)} - ${JSON.stringify(b)} list request from User ${req.decoded.username}`);
-            console.log(d)
-            return d
-        })
-        .catch((err) => {
-            logger.error(err)
-            res.status(404).json(err)
-        })
-        }
-
-      //let body = {...body , uuid : req.params.uuid}
-
     if (req.isAdmin) {
         // Add logic for Server Admin (can remove every appoointment)
-        modifyItem()
+                logger.debug("SERVER ADMIN - start patch process...")
+                patchOne(collection, req.params.uuid, req.body)
+                    .then((d) => {
+                        logger.info(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+                        res.status(200).json({message:d})})
+                    .catch((err) => {
+                        logger.error(err)
+                        res.status(404).json(err)})
+            
 
     } else if (req.isUserFamilyAdmin) {
         // Add Logic for Family Admin (Can remove all family rel. Appoitnments)
-        const res = getItem(collection, req.params.uuid)
-        const item = res[0]
-
+        findSome(collection, {uuid:req.params.uuid})
+        .then((d) => {
         //check if requestingf user is in family Admin list: 
-        if (item.linkedFamily != req.family.uuid) {
+        if (d[0].linkedFamily !== req.family.uuid) {
             logger.warn(`User ${req.decoded.username} has no permission to delete item (not in Family) `)
             res.status(401).json({message: `User ${req.decoded.username} has no permission to delete item `})
         } else {
-            //modifyItem()
+            logger.debug("FAMILY ADMIN - start patch process...")
+                patchOne(collection, req.params.uuid, req.body)
+                    .then((d) => {
+                        logger.info(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+                        res.status(200).json({message:d})})
+                    .catch((err) => {
+                        logger.error(err)
+                        res.status(404).json(err)})
         }
+    }).catch((err) => {
+        logger.error(err)
+        res.status(404).json(err)
+    })
 
     } else if (req.isUserFamilyMember) {
         // Add Logic for Family Members (can remove only own appointments)
@@ -399,7 +390,6 @@ router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(r
 
     
 })
-
 
 export default router
 
