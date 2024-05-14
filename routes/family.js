@@ -5,7 +5,7 @@ import {logger} from '../middlewares/loggers.js'
 import date from 'date-and-time';
 
 import {familySchema} from "../classes/schemas.js";
-import { getCookieData, checkUserInFamily, getFamilyCheck, verifyJWTToken, identUser} from "../middlewares/middlewares.js";
+import {  checkUserInFamily, getFamilyCheck, verifyJWTToken, identUser} from "../middlewares/middlewares.js";
 import 'dotenv/config'
 import {io} from "../index.js";
 
@@ -21,7 +21,7 @@ let collection = "family";
 function addColl(req, res, next) {
 
     //   adding coll value because missing in family route
-    logger.debug("adding 'Family' as coll param to the request")
+    logger.debug("adding 'family' as coll param to the request")
     req.params.coll = "family"
     next()
 }
@@ -74,7 +74,8 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
 })
 
 // Endpoint to create a new item
-router.post("/", addColl, identUser, getCookieData,  async (req, res) =>{
+router.post("/", addColl, identUser, async (req, res) =>{
+    // just removed getCookieData from middleware
 
     logger.debug("reached the new Family router for FAmily Creation...")
     let session_familyUuid = ""
@@ -165,7 +166,7 @@ router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (
 })
 
 // Endpoint to Update am item
-router.patch('/:uuid', addColl,identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
+router.patch('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
     setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json({ message: 'Missing body...'})

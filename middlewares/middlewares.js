@@ -8,14 +8,14 @@ const secret = process.env.mySecret
 let currentFamily = {}
 let currentApiKey = ""
 
-
+// Identifies the user by the provided JWT. If the user is Server admin (isAdmin) then this info is provided to the next middleware
 export async function identUser(req, res, next) {
     logger.debug("reached the identUser Middleware ... ")
 
     // checks if api_key comes from Header or Cookie
     if (!req.headers.api_key) {
             if (!req.cookies.fc_token) {
-                logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
+                logger.error(`${req.params.coll} - identUser - No ApiKey found.  Check for "api_key" in the Request header`)
                 return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
             }
             else {
@@ -26,15 +26,18 @@ export async function identUser(req, res, next) {
         } else {
             logger.debug("Received Token from request Header")
             currentApiKey = req.headers.api_key
-        }
+    }
 
-        // adding the token to the rest of the middlewares    
-        req.token = currentApiKey
-        
-        // Verify the jwt to add user info into the request workflow
-        jwt.verify(currentApiKey, secret, async function(err, decoded) {
+    // adding the token to the rest of the middlewares    
+    req.token = currentApiKey;
+
+    // Sets is Admin to false until proven user is an server Admin
+    req.isAdmin = false;
+    
+    // Verify the jwt to add user info into the request workflow
+    jwt.verify(currentApiKey, secret, async function(err, decoded) {
             if (err) {
-                logger.error(`${req.params.coll} - middlewares.js / verifyJWTToken /, Error during token verification - ${err}`);
+                logger.error(`${req.params.coll} - middlewares.js / identUser /, Error during token verification - ${err}`);
                 // console.log(req.params.coll, ' - middlewares.js / verifyJWTToken /,Error during token verification:', err);
                 return res.status(500).json({message: 'Error during token verification.'});
             }
@@ -46,11 +49,13 @@ export async function identUser(req, res, next) {
                 if (decoded.isAdmin) {
                     req.isAdmin = true
                     logger.debug(`the requesting user : ${decoded.username} is identified as server admin.`)
-                }
+                } ;
     
+                // pass the decoded JWT to the next middlewares
                 req.decoded = decoded
 
-                logger.debug(`verifyJWTToken successful -  ${decoded}`)
+                logger.debug(`Middleware identUser successful -  ${JSON.stringify(decoded)}`)
+                next()
                 
             }
             else {
@@ -59,57 +64,35 @@ export async function identUser(req, res, next) {
             }
         })
 
-    next()
+    
 }
 
 
-export async function getCookieData(req, res, next) {
-    logger.debug("reached the getCookieData Middleware ... ")
+// export async function getCookieData(req, res, next) {
+//     logger.debug("reached the getCookieData Middleware ... ")
 
-    // if (!req.headers.family_uuid) {
-    //     if (!req.cookies.fc_user) {
-    //         console.log(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
-    //         logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
-    //         return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
-    //         //throw new Error("- getFamilyCheck - no family_uuid received from the query ! Aborted...")
-    //     }
-    //     else {
-    //         // if cookie exists:
-    //         currentFamily = JSON.parse(req.cookies.fc_user)
-    //         console.log("Request user from Cookie: ", JSON.parse(req.cookies.fc_user))
-    //     }
-    // } else {
-    //     currentFamily.linkedFamily = req.headers.family_uuid
-    //     console.log("Request family from Header: ", req.headers.family_uuid)
-    // }
+//     // checks if api_key comes from Header or Cookie
+//     if (!req.headers.api_key) {
+//         if (!req.cookies.fc_token) {
+//             logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
+//             return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
+//         }
+//         else {
+//             // if cookie exists:
+//             logger.debug("Received Token from Cookie")
 
-    // checks if api_key comes from Header or Cookie
-    if (!req.headers.api_key) {
-        if (!req.cookies.fc_token) {
-            logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
-            return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
-        }
-        else {
-            // if cookie exists:
-            logger.debug("Received Token from Cookie")
-
-            currentApiKey = req.cookies.fc_token
-        }
-    } else {
-        logger.debug("Received Token from request Header")
-        currentApiKey = req.headers.api_key
-    }
-
-    req.token = currentApiKey
-    next()
-}
+//             currentApiKey = req.cookies.fc_token
+//         }
+//     } else {
+//         logger.debug("Received Token from request Header")
+//         currentApiKey = req.headers.api_key
+//     }
+//     req.token = currentApiKey
+//     next()
+// }
 
 
 export async function getFamilyCheck(req, res, next) {
-
-    //console.log("get FamilyCheck - Request body received: ",req.body)
-    // console.log("Cookies: ", req.cookies)
-    // console.log("header: ", req.headers)
 
     // checks if family uuid comes from Header or Cookie
     if (!req.headers.family_uuid) {
@@ -122,31 +105,14 @@ export async function getFamilyCheck(req, res, next) {
         else {
             // if cookie exists:
             currentFamily = JSON.parse(req.cookies.fc_user)
-            logger.debug("Requesting user from Cookie: ", JSON.parse(req.cookies.fc_user))
+            logger.debug(`Requesting user from Cookie: ${JSON.parse(req.cookies.fc_user)}`)
         }
     } else {
         currentFamily.linkedFamily = req.headers.family_uuid
-        logger.debug("Requesting family from Header: ", req.headers.family_uuid)
+        logger.debug(`Requesting family from Header: ${req.headers.family_uuid}`)
     }
 
-    // checks if api_key comes from Header or Cookie
-    if (!req.headers.api_key) {
-        if (!req.cookies.fc_token) {
-            // console.log(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request headeror cookie`)
-            logger.error(`${req.params.coll} - getFamilyCheck - No ApiKey found.  Check for "api_key" in the Request header or cookie`)
-            return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header or cookie`})
-        }
-        else {
-            // if cookie exists:
-            logger.debug("Received Token from Cookie")
-
-            currentApiKey = req.cookies.fc_token
-        }
-    } else {
-        logger.debug("Received Token from request Header")
-        currentApiKey = req.headers.api_key
-    }
-
+    
 
     /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created */
@@ -166,7 +132,6 @@ export async function getFamilyCheck(req, res, next) {
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
-                    req.token = currentApiKey
                     logger.debug('getFamilyCheck successful')
                     next()
                 }

@@ -1,5 +1,6 @@
 import {MongoClient} from 'mongodb';
 import 'dotenv/config'
+import { logger } from '../middlewares/loggers.js';
 
 // Connection URL
 const url = process.env.mongo_connection || 'mongodb://db:27017';
@@ -85,13 +86,15 @@ export async function patchOne(coll, uuid, data) {
 
   // Use connect method to connect to the server
   await client.connect();
-  console.log('Connected successfully to server');
+  logger.debug('Connected successfully to server');
 
   const db = client.db(dbName);
   const collection = db.collection(coll);
 
-  const updateResult = await collection.updateOne({ uuid: uuid }, { $set: data });
-  console.log('Updated document =>', updateResult);
+  
+  const updateResult = await collection.updateOne({ uuid }, { $set: data });
+  
+  // logger.warn(`Updated document => ${updateResult}`);
 
   return updateResult;
 }
