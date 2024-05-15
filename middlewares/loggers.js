@@ -67,7 +67,7 @@ export const logger = createLogger({
       })
         
         ),
-    defaultMeta: { S: 'backend', V: backend },
+    // defaultMeta: { S: 'backend', V: backend },
     transports: [
       new transports.File({ filename: './logs/error_LevelLogs.log', level: 'error' }),
       new transports.File({ filename: './logs/info_LevelLogs.log', level: loglevel }),

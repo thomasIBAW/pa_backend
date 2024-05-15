@@ -45,7 +45,7 @@ router.post('/api/:coll/find', identUser, getFamilyCheck, checkUserInFamily, (re
     const body = req.body
 
      /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family 
-     Correction : also admin will only find family related items.
+     Correction : as per now, also admin will only find family related items.
      */
 
 

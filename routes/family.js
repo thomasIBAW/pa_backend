@@ -14,22 +14,26 @@ const router = express.Router();
 
 let collection = "family";
 
+
+
 // ****
 //  Family Router
 // ****
 
 function addColl(req, res, next) {
+    let details = {fileName:"family.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
 
     //   adding coll value because missing in family route
-    logger.debug("adding 'family' as coll param to the request")
+    logger.debug("adding 'family' as coll param to the request", details)
     req.params.coll = "family"
     next()
 }
 
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
 router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (req, res) =>{
+    let details = {fileName:"family.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
 
-    logger.debug("reached the new Family router...")
+    logger.debug("reached the new Family router...", details)
 
     const body = req.body ;
 
@@ -38,7 +42,7 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
         body.uuid = req.family.uuid
         
         } else {
-            logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
+            logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`, details)
             return res.status(401).json(`not a family member`)
         }
     } else {
@@ -46,11 +50,11 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
             
     }
 
-    logger.debug(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
+    logger.debug(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`, details)
 
     findSome(collection, body)
         .then((d) => {
-            logger.debug(`${collection} - Received a list request from User ${req.decoded.username}`);
+            logger.debug(`${collection} - Received a list request from User ${req.decoded.username} `, details);
             res.status(200).json(d)
         })
         .catch((err) => {
@@ -63,9 +67,10 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
 
 // Endpoint to create a new item
 router.post("/", addColl, identUser, async (req, res) =>{
-    
+    let details = {fileName:"family.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
 
-    logger.debug("reached the new Family router for FAmily Creation...")
+
+    logger.debug("reached the new Family router for FAmily Creation...", details)
     let session_familyUuid = ""
 
     try {
@@ -79,7 +84,7 @@ router.post("/", addColl, identUser, async (req, res) =>{
 
         val = new Family(familyName,familyColor)
 
-        logger.debug(`userUuid is : ${req.decoded.userUuid}`)
+        logger.debug(`userUuid is : ${req.decoded.userUuid}`, details)
 
         val.familyAdmin = [req.decoded.userUuid]
         val.familyMember = [req.decoded.userUuid]
@@ -90,7 +95,7 @@ router.post("/", addColl, identUser, async (req, res) =>{
         await write(collection, val )
             .then( s => {
                 // console.log('Item created :',s)
-                logger.info(`created a new Family in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
+                logger.info(`created a new Family in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`, details);
 
                 // Adding a socket message to update all open pages
                 // Socket updates a useless state on all connected clients on the pages identified by the collection.
@@ -108,7 +113,7 @@ router.post("/", addColl, identUser, async (req, res) =>{
 
     }
     catch (err) {
-        logger.error(`Error in middlewares.js, on the post item function - ${err.message}`)
+        logger.error(`Error in middlewares.js, on the post item function - ${err.message}`, details)
         res.status(404).json(err.message)
     }
 
@@ -116,11 +121,12 @@ router.post("/", addColl, identUser, async (req, res) =>{
 
 // Endpoint to delete an item
 router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
+    let details = {fileName:"family.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
 
 // only Server Admins can delete Family
     if (!req.isAdmin) {
 
-        logger.warn(`${collection} - User ${req.decoded.username} is not server Administrator! Aborted...`)
+        logger.warn(`${collection} - User ${req.decoded.username} is not server Administrator! Aborted...`, details)
             return res.status(401).json({message:`not server Administrator`})
       
     } else {
@@ -128,7 +134,7 @@ router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (
         deleteOne(req.params.coll, req.params.uuid)
 
         .then((d) => {
-            logger.warn(`Deleted from collection Family entry: ${req.params.uuid} by: ...tbc`)
+            logger.warn(`Deleted from collection Family entry: ${req.params.uuid} by: ...tbc`, details)
             res.status(200).json(d)
         })
         .catch((err) => {
@@ -143,6 +149,7 @@ router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (
 // Endpoint to Update am item
 router.patch('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
     if (!req.body) return res.status(404).json({ message: 'Missing body...'})
+    let details = {fileName:"family.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
 
     // only Server Admins can delete Family
     if (!req.isAdmin) {
@@ -151,24 +158,22 @@ router.patch('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (r
 
             patchOne(collection, req.params.uuid, req.body)
             .then((d) => {
-                logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+                logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `, details)
                 res.status(200).json(d)})
             .catch((err) => {
                 logger.error(err)
                 res.status(404).json(err)})
 
             } else {
-                logger.warn(`${collection} - User ${req.decoded.username} is not a family Admin! Aborted...`)
+                logger.warn(`${collection} - User ${req.decoded.username} is not a family Admin! Aborted...`, details)
                 return res.status(401).json(`not a family Admin`)
             }
-        logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
-            return res.status(401).json(`not a family member`)
-      
+     
     } else {
 
         patchOne(collection, req.params.uuid, req.body)
         .then((d) => {
-            logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+            logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `, details)
             res.status(200).json(d)})
         .catch((err) => {
             logger.error(err)
@@ -180,7 +185,7 @@ router.patch('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (r
 
     patchOne(collection, req.params.uuid, req.body)
         .then((d) => {
-            logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+            logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `, details)
             res.status(200).json(d)})
         .catch((err) => {
             logger.error(err)
