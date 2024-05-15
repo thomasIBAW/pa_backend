@@ -95,24 +95,24 @@ export async function identUser(req, res, next) {
 export async function getFamilyCheck(req, res, next) {
 
     // checks if family uuid comes from Header or Cookie
-    if (!req.headers.family_uuid) {
-        if (!req.cookies.fc_user) {
-            // logger.debug(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
-            logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
-            return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
-            //throw new Error("- getFamilyCheck - no family_uuid received from the query ! Aborted...")
-        }
-        else {
-            // if cookie exists:
-            currentFamily = JSON.parse(req.cookies.fc_user)
-            logger.debug(`Requesting user from Cookie: ${JSON.parse(req.cookies.fc_user)}`)
-        }
-    } else {
-        currentFamily.linkedFamily = req.headers.family_uuid
-        logger.debug(`Requesting family from Header: ${req.headers.family_uuid}`)
-    }
+    // if (!req.headers.family_uuid) {
+    //     if (!req.cookies.fc_user) {
+    //         // logger.debug(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
+    //         logger.error(`${req.params.coll} - getFamilyCheck - no family_uuid received from the query ! Aborted...`)
+    //         return res.status(401).json({ message:`${req.params.coll} - No family found.  Check for "family_uuid" in the Request header`})
+    //         //throw new Error("- getFamilyCheck - no family_uuid received from the query ! Aborted...")
+    //     }
+    //     else {
+    //         // if cookie exists:
+    //         currentFamily = JSON.parse(req.cookies.fc_user)
+    //         logger.debug(`Requesting user from Cookie: ${JSON.parse(req.cookies.fc_user)}`)
+    //     }
+    // } else {
+    //     currentFamily.linkedFamily = req.headers.family_uuid
+    //     logger.debug(`Requesting family from Header: ${req.headers.family_uuid}`)
+    // }
 
-    
+    currentFamily = req.decoded
 
     /*   this middleware checks if a family with the provided uuid, exist and returns the familyAdmins and members to next()
     the check is done only for non-user creation calls, because at the user creation time, family is not yet created */
@@ -120,7 +120,7 @@ export async function getFamilyCheck(req, res, next) {
     logger.debug(`${req.params.coll} - Request has reached the "getFamilyCheck" middleware, Requested Family: ${currentFamily.linkedFamily}`)
 
 
-    if (req.params.coll !== 'users'){
+    
          await findSome('family', { "uuid" : `${currentFamily.linkedFamily}`} )
             .then( (family) => {
 
@@ -129,6 +129,7 @@ export async function getFamilyCheck(req, res, next) {
                     res.status(401).json(`${req.params.coll} - getFamilyCheck - No family found.  Check for "family_uuid" in the Request header`)
                 }
                 else {
+                    logger.debug(`Found family ${family[0]}`)
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
@@ -140,7 +141,7 @@ export async function getFamilyCheck(req, res, next) {
                 logger.error(`${req.params.coll} - error in middleware getFamilyCheck - ${rew.headers.family_uuid} - ${err}`)
                 res.status(404).json(err)
             })
-    } else next()
+        
 }
 
 export async function checkUserInFamily(req, res, next) {
@@ -152,15 +153,15 @@ export async function checkUserInFamily(req, res, next) {
     let isUserFamilyMember = false
     let isUserFamilyAdmin = false
 
-    if (req.params.coll !== "users") {
+    
         isUserFamilyAdmin = req.familyAdmin.includes(req.decoded.userUuid)
         isUserFamilyMember = req.familyMember.includes(req.decoded.userUuid)
         req.isUserFamilyAdmin = isUserFamilyAdmin
         req.isUserFamilyMember = isUserFamilyMember
         logger.debug('checkUserInFamily successful')
         next()
-    }
-    else next()
+    
+    
 }
 
 export async function checkDuplicates (req, res, next) {

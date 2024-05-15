@@ -27,7 +27,7 @@ function addColl(req, res, next) {
 // Endpoint to filter by any Data (JSON) passed as payload to the request.
 
 router.post('/find', identUser , addColl, getFamilyCheck, checkUserInFamily, (req, res) =>{
-    let details = {fileName:"users.js", isAdmin: req.isAdmin, isUserFamilyAdmin: req.isUserFamilyAdmin, isUserFamilyMember:req.isUserFamilyMember}
+    let details = {fileName:"users.js", isAdmin: req.isAdmin}
 
     const body = req.body
 
@@ -49,8 +49,22 @@ router.post('/find', identUser , addColl, getFamilyCheck, checkUserInFamily, (re
                 res.status(404).json(err)
             })
      
-    } else {
+        } else {
 
+            findSome(collection, body)
+            .then((d) => {
+                logger.debug(`${collection} - Received a list request from User ${req.decoded.username}`, details);
+                res.status(200).json(d)
+            })
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)
+            })
+
+        }
+
+    } else {
+        // user is Server Admin 
         findSome(collection, body)
         .then((d) => {
             logger.debug(`${collection} - Received a list request from User ${req.decoded.username}`, details);
@@ -63,7 +77,7 @@ router.post('/find', identUser , addColl, getFamilyCheck, checkUserInFamily, (re
 
     }
 
-    }
+
 })
 
 // Endpoint to create a new item  -  created at signup
