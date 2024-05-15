@@ -33,36 +33,24 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
 
     const body = req.body ;
 
-    let session_familyUuid = ""
-
-    if (req.cookies.fc_user) {
-        let authState = JSON.parse(req.cookies.fc_user)
-        session_familyUuid = authState.linkedFamily ;
-    }
-    else if (req.headers.family_uuid) {
-        session_familyUuid = req.headers.family_uuid
-    }
-    else {
-        logger.warn(`${collection} - no family_uuid received from the query ! Aborted...`)
-        return res.status(401).json({ message: 'no family_uuid received from the query ! Aborted...'})
-    }
-
-
-    /* adding some permission logic to the find requests. Admins will find all items, non-Admin will be limited to their family */
-    if (!req.decoded.isAdmin) {
+    if (!req.isAdmin) {
         if(req.isUserFamilyMember) {
-            body.linkedFamily = session_familyUuid
+        body.uuid = req.family.uuid
+        
         } else {
-            logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
-            return res.status(401).json({ message: `not a family member`})
+            logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
+            return res.status(401).json(`not a family member`)
         }
+    } else {
+        // add logic for Server Admins (none means no filtering restrictions)
+            
     }
 
-    console.log(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
+    logger.debug(`${collection} / ${req.decoded.username} - Searching for : ${JSON.stringify(body)}`)
 
     findSome(collection, body)
         .then((d) => {
-            logger.info(`${collection} - Received a list request from User ${req.decoded.username}`);
+            logger.debug(`${collection} - Received a list request from User ${req.decoded.username}`);
             res.status(200).json(d)
         })
         .catch((err) => {
@@ -75,33 +63,10 @@ router.post('/find', addColl, identUser , getFamilyCheck, checkUserInFamily, (re
 
 // Endpoint to create a new item
 router.post("/", addColl, identUser, async (req, res) =>{
-    // just removed getCookieData from middleware
+    
 
     logger.debug("reached the new Family router for FAmily Creation...")
     let session_familyUuid = ""
-
-    // if (req.cookies._auth_state) {
-    //     let authState = JSON.parse(req.cookies._auth_state)
-    //     session_familyUuid = authState.linkedFamily ;
-    // }
-    // if (req.headers.family_uuid) {
-    //     session_familyUuid = req.headers.family_uuid
-    // }
-
-
-    //let authState = JSON.parse(req.cookies._auth_state) || ""
-    //let session_familyUuid = req.headers.family_uuid || authState.linkedFamily ;
-    //
-    // console.log(`
-    // Details about current API call:
-    // endpoint : ${req.params.coll}
-    // logged in user: ${req.decoded.username}
-    // (isAdmin : ${req.decoded.isAdmin})
-    // (isFamilyAdmin : ${req.isUserFamilyAdmin})
-    // (isFamilyMember : ${req.isUserFamilyMember})
-    // Family name is : ${req.family.familyName}
-    // FamilyUuid : ${session_familyUuid}
-    // `)
 
     try {
         let val = {};
@@ -143,9 +108,7 @@ router.post("/", addColl, identUser, async (req, res) =>{
 
     }
     catch (err) {
-        logger.error(err)
-        console.log(`Error in middlewares.js, on the post item function - ${err.message}`)
-
+        logger.error(`Error in middlewares.js, on the post item function - ${err.message}`)
         res.status(404).json(err.message)
     }
 
@@ -154,22 +117,66 @@ router.post("/", addColl, identUser, async (req, res) =>{
 // Endpoint to delete an item
 router.delete('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
 
-    deleteOne(req.params.coll, req.params.uuid)
+// only Server Admins can delete Family
+    if (!req.isAdmin) {
+
+        logger.warn(`${collection} - User ${req.decoded.username} is not server Administrator! Aborted...`)
+            return res.status(401).json({message:`not server Administrator`})
+      
+    } else {
+
+        deleteOne(req.params.coll, req.params.uuid)
+
         .then((d) => {
             logger.warn(`Deleted from collection Family entry: ${req.params.uuid} by: ...tbc`)
             res.status(200).json(d)
         })
         .catch((err) => {
             logger.error(err)
-            res.status(404).json(err)})
+            res.status(404).json(err)})   
+    }
+
+    
 
 })
 
 // Endpoint to Update am item
 router.patch('/:uuid', addColl, identUser, getFamilyCheck, checkUserInFamily, (req, res) =>{
-    setCollection(req.params.coll);
-
     if (!req.body) return res.status(404).json({ message: 'Missing body...'})
+
+    // only Server Admins can delete Family
+    if (!req.isAdmin) {
+
+        if(req.isUserFamilyAdmin) {
+
+            patchOne(collection, req.params.uuid, req.body)
+            .then((d) => {
+                logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+                res.status(200).json(d)})
+            .catch((err) => {
+                logger.error(err)
+                res.status(404).json(err)})
+
+            } else {
+                logger.warn(`${collection} - User ${req.decoded.username} is not a family Admin! Aborted...`)
+                return res.status(401).json(`not a family Admin`)
+            }
+        logger.warn(`${collection} - User ${req.decoded.username} is not a family Member! Aborted...`)
+            return res.status(401).json(`not a family member`)
+      
+    } else {
+
+        patchOne(collection, req.params.uuid, req.body)
+        .then((d) => {
+            logger.warn(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
+            res.status(200).json(d)})
+        .catch((err) => {
+            logger.error(err)
+            res.status(404).json(err)})
+
+    }
+
+
 
     patchOne(collection, req.params.uuid, req.body)
         .then((d) => {
