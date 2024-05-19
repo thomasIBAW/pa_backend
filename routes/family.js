@@ -247,6 +247,7 @@ router.post("/code", addColl, identUser, async (req, res) =>{
             // Socket updates a useless state on all connected clients on the pages identified by the collection.
             // The updated state triggers a page reload so that any new item immediately appears on the client.
             io.to(familyToUpdate[0].uuid).emit("family", new Date());
+            
             res.status(200).json(d)})
 
         .catch((err) => {
