@@ -70,7 +70,7 @@ export const logger = createLogger({
     // defaultMeta: { S: 'backend', V: backend },
     transports: [
       new transports.File({ filename: './logs/error_LevelLogs.log', level: 'error' }),
-      new transports.File({ filename: './logs/info_LevelLogs.log', level: loglevel }),
+    //   new transports.File({ filename: './logs/info_LevelLogs.log', level: loglevel }),
 
       // Optionally add console transport
       new transports.Console({
@@ -83,15 +83,18 @@ export const logger = createLogger({
                 }) 
             )
             , level:consolelevel
+        }),
+        
+        // Daily Rotate file logs
+      new transports.DailyRotateFile({
+            filename: './logs/application-%DATE%.log',
+            datePattern: 'YYYY-MM-DD',
+            zippedArchive: true,
+            maxSize: '20m',
+            maxFiles: '14d',
+            level: loglevel
         })
     ]
   });
 
   // Optionally, if you want to use a daily rotate file transport
-new transports.DailyRotateFile({
-    filename: './logs/application-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-})
