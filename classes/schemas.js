@@ -35,7 +35,7 @@ export const userSchema = Joi.object({
     email: Joi.string()
         .email(),
     password: Joi.string()
-        .pattern(new RegExp('^[a-zA-Z0-9]{3,60}$')),
+    .pattern(new RegExp('^[a-zA-Z0-9!@#$%^&*()_+\\-=[\\]{}|;:\'",.<>?/]{3,60}$')),
     repeat_password: Joi.ref('password'),
     remember: Joi.boolean(),
     linkedPerson: Joi.string(),
