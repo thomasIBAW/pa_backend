@@ -8,6 +8,9 @@ import bcrypt from "bcrypt";
 import {User, Family} from "../classes/classes.js";
 import 'dotenv/config'
 
+const backend = process.env.BACKEND || "unknown"  //to be set in Env variables
+const devstate = process.env.DEVSTATE || "DEV" //to be set in Env variables
+
 const secret = process.env.mySecret //to be set in Env variables
 const saltRounds = 10;
 
@@ -136,7 +139,14 @@ router.post('/', async (req, res) => {
             httpOnly: true,
             secure: true
         })
-        
+        res.cookie('fc_backend_version', {
+            version: backend,
+            running: devstate
+        }, {
+            sameSite: 'strict',
+            httpOnly: false,
+            secure: true
+        })
         res.cookie('fc_user', 
         JSON.stringify({
             username: valUser.username,
@@ -282,7 +292,14 @@ router.post('/', async (req, res) => {
                             httpOnly: true,
                             secure: true
                         })
-                        
+                        res.cookie('fc_backend_version', {
+                            version: backend,
+                            running: devstate
+                        }, {
+                            sameSite: 'strict',
+                            httpOnly: false,
+                            secure: true
+                        })
                         res.cookie('fc_user', 
                         JSON.stringify({
                             username: valUser.username,
