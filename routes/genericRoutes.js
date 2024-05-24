@@ -48,7 +48,6 @@ router.post('/api/:coll/find', identUser, getFamilyCheck, checkUserInFamily, (re
      Correction : as per now, also admin will only find family related items.
      */
 
-
     if (!req.isAdmin) {
         if(req.isUserFamilyMember) {
         body.linkedFamily = req.family.uuid
@@ -100,24 +99,28 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json({message:`not a family member`})
                 }
+                try {
+                    const calendar = await calendarSchema.validateAsync(req.body)
 
-                const calendar = await calendarSchema.validateAsync(req.body)
+                    logger.info('Backend received calendar payload to add: ', req.body)
 
-                logger.info('Backend received calendar payload to add: ', req.body)
+                    let subject = calendar.subject,
+                        creator = userId || "Unknown",
+                        dateTimeStart = calendar.dateTimeStart,
+                        dateTimeEnd = calendar.dateTimeEnd,
+                        fullDay = calendar.fullDay || false ,
+                        attendees = calendar.attendees || [],
+                        note = calendar.note || "",
+                        tags = calendar.tags || [],
+                        important = calendar.important || false,
+                        created = date.format(new Date(), 'YYYY-MM-DDTHH:mm')
 
-                let subject = calendar.subject,
-                    creator = userId || "Unknown",
-                    dateTimeStart = calendar.dateTimeStart,
-                    dateTimeEnd = calendar.dateTimeEnd,
-                    fullDay = calendar.fullDay || false ,
-                    attendees = calendar.attendees || [],
-                    note = calendar.note || "",
-                    tags = calendar.tags || [],
-                    important = calendar.important || false,
-                    created = date.format(new Date(), 'YYYY-MM-DDTHH:mm')
-
-                val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
-                logger.debug(`Backend passes the following Appointment to the DB connector: ${val}`)
+                    val = new Appointment(subject, creator, dateTimeStart, dateTimeEnd, fullDay, attendees, note, important,created , tags)
+                    logger.debug(`Backend passes the following Appointment to the DB connector: ${val}`)
+                } catch (error) {
+                    logger.error(`${collection} - ${error.message}`)
+                    return res.status(403).json({message: error.message})
+                }
                 break;
 
             case 'people' :
@@ -125,17 +128,20 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json({message:`not a family member`})
                 }
+                try {
+                    let person = await personSchema.validateAsync(req.body)
 
-                let person = await personSchema.validateAsync(req.body)
+                    let firstName = person.firstName,
+                        lastName = person.lastName || "",
+                        nickName = person.nickName || value.firstName,
+                        dob = date.format(new Date(person.dob), pattern) || "",
+                        email = person.email || ""
 
-                let firstName = person.firstName,
-                    lastName = person.lastName || "",
-                    nickName = person.nickName || value.firstName,
-                    dob = date.format(new Date(person.dob), pattern) || "",
-                    email = person.email || ""
-
-                val = new Person(firstName, lastName, nickName, dob, email)
-
+                    val = new Person(firstName, lastName, nickName, dob, email)
+                } catch (error) {
+                    logger.error(`${collection} - ${error.message}`)
+                    return res.status(403).json({message: error.message})
+                }
                 break;
 
             case 'tags' :
@@ -143,15 +149,23 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                     logger.warn(`${collection} - User ${req.decoded.username} is not a familyMember! Aborted...`)
                     return res.status(401).json({message:`not a family member`})
                 }
+                try {
+                    const tag = await tagsSchema.validateAsync(req.body)
 
-                const tag = await tagsSchema.validateAsync(req.body)
+                    let tagName = tag.tagName,
+                        tagColor = tag.tagColor || ""
+                    val = new Tag(tagName,tagColor)
 
-                let tagName = tag.tagName,
-                    tagColor = tag.tagColor || ""
-                val = new Tag(tagName,tagColor)
+
+                } catch (error) {
+                    logger.error(`${collection} - ${error.message}`)
+                    return res.status(403).json({message: error.message})
+                }
+
                 break;
 
             case 'family' :
+                try {
                 const fam = await familySchema.validateAsync(req.body)
                 // console.log( 'validates: ', fam)
 
@@ -164,7 +178,10 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
 
                 val.familyAdmin = [req.decoded.userUuid]
                 val.familyMember = [req.decoded.userUuid]
-
+            } catch (error) {
+                logger.error(`${collection} - ${error.message}`)
+                return res.status(403).json({message: error.message})
+            }
                 break;
                 
             case 'todos' :
@@ -173,7 +190,9 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                     return res.status(401).json(`not a family member`)
                 }
 
+                try {
                 const to = await todoSchema.validateAsync(req.body);
+                   
 
                 let subject1 = to.subject,
                     creator1 = to.creator || "Unknown",
@@ -186,6 +205,11 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                     created1 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
                 val = new Todo(subject1, creator1, deadline1, fullDay1, attendees1, note1, important1,created1 , tags1)
+
+         } catch (error) {
+                logger.error(`${collection} - ${error.message}`)
+                return res.status(403).json({message: error.message})
+            }
 
                 break;
 
@@ -219,7 +243,7 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
 
         }
     catch (err) {
-        logger.error(`Error in middlewares.js, on the post item function - ${err}`)
+        logger.error(`Error in middlewares.js, on the post item function - ${err.message}`)
         res.status(404).json(err.message)
     }
 });

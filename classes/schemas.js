@@ -52,7 +52,6 @@ export const calendarSchema = Joi.object({
         .max(30)
         .required(),
     creator: Joi.string()
-        .min(36)
         .max(36),
     dateTimeStart: Joi.date()
         .required(),
@@ -61,8 +60,7 @@ export const calendarSchema = Joi.object({
     attendees: Joi.array(),
     tags: Joi.array(),
     note: Joi.string()
-    .min(0)
-        .max(150),
+    .allow(''),
     fullDay: Joi.boolean(),
     important: Joi.boolean()
 });
@@ -100,7 +98,7 @@ export const todoSchema = Joi.object({
     deadline: Joi.date(),
     attendees: Joi.array(),
     tags: Joi.array(),
-    note: Joi.string(),
+    note: Joi.string().allow(''),
     fullDay: Joi.boolean(),
     important: Joi.boolean()
 });
