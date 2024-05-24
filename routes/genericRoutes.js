@@ -133,7 +133,7 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
 
                     let firstName = person.firstName,
                         lastName = person.lastName || "",
-                        nickName = person.nickName || value.firstName,
+                        nickName = person.nickName || person.firstName,
                         dob = date.format(new Date(person.dob), pattern) || "",
                         email = person.email || ""
 

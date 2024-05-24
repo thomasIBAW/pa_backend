@@ -68,29 +68,6 @@ export async function identUser(req, res, next) {
 }
 
 
-// export async function getCookieData(req, res, next) {
-//     logger.debug("reached the getCookieData Middleware ... ")
-
-//     // checks if api_key comes from Header or Cookie
-//     if (!req.headers.api_key) {
-//         if (!req.cookies.fc_token) {
-//             logger.error(`${req.params.coll} - getCookieData - No ApiKey found.  Check for "api_key" in the Request header`)
-//             return res.status(401).json({ message:`${req.params.coll} - No ApiKey found.  Check for "api_key" in the Request header`})
-//         }
-//         else {
-//             // if cookie exists:
-//             logger.debug("Received Token from Cookie")
-
-//             currentApiKey = req.cookies.fc_token
-//         }
-//     } else {
-//         logger.debug("Received Token from request Header")
-//         currentApiKey = req.headers.api_key
-//     }
-//     req.token = currentApiKey
-//     next()
-// }
-
 
 export async function getFamilyCheck(req, res, next) {
 
@@ -129,16 +106,16 @@ export async function getFamilyCheck(req, res, next) {
                     res.status(401).json(`${req.params.coll} - getFamilyCheck - No family found.  Check for "family_uuid" in the Request header`)
                 }
                 else {
-                    logger.debug(`Found family ${family[0]}`)
+                    logger.debug(`Found family ${JSON.stringify(family[0])}`)
                     req.family = family[0]
                     req.familyAdmin = family[0].familyAdmin;
                     req.familyMember = family[0].familyMember;
-                    logger.debug('getFamilyCheck successful')
+                    logger.debug(`getFamilyCheck successful - Family uuid : ${req.family.uuid} `)
                     next()
                 }
             })
             .catch((err) => {
-                logger.error(`${req.params.coll} - error in middleware getFamilyCheck - ${rew.headers.family_uuid} - ${err}`)
+                logger.error(`${req.params.coll} - error in middleware getFamilyCheck - ${req.headers.family_uuid} - ${err}`)
                 res.status(404).json(err)
             })
         

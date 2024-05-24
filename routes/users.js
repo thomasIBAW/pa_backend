@@ -37,7 +37,7 @@ router.post('/find', identUser , addColl, getFamilyCheck, checkUserInFamily, (re
 
         if(req.isUserFamilyAdmin) {
 
-            body.linkedFamily = req.Family.uuid
+            body.linkedFamily = req.family.uuid
 
             findSome(collection, body)
             .then((d) => {

@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
         let invitationCode = req.body.invitationCode
         let signupTypeCode = false
         let foundFamily = {}
-        req.body.value === 1 ? signupTypeCode = false : signupTypeCode = true
+        req.body.value == 1 ? signupTypeCode = false : signupTypeCode = true
 
         logger.info(`Received signup request from client - ${JSON.stringify(req.body)}`)
         const user = await userSchema.validateAsync(req.body.user);
@@ -169,7 +169,7 @@ router.post('/', async (req, res) => {
                       return response;
                     
                     } else {
-                      throw new Error ("Invitation Code not existing or used")
+                      throw new Error ("Invitation Code not existing or already used")
                     }
                   } catch (error) {
                     console.error(error.message);

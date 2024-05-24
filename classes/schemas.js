@@ -12,17 +12,17 @@ export const personSchema = Joi.object({
         .max(30)
         .required(),
     lastName: Joi.string()
-        .alphanum()
-        .min(3)
+        .alphanum().allow('')
+        .min(0)
         .max(30),
     nickName: Joi.string()
-        .alphanum()
-        .min(3)
+        .alphanum().allow('')
+        .min(0)
         .max(30),
     dob: Joi.date()
-        .format('DD.MM.YYYY'),
+        .allow(''),
     email: Joi.string()
-        .email()
+        .allow('')
 });
 
 export const userSchema = Joi.object({
