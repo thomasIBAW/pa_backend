@@ -32,6 +32,7 @@ router.post('/', async (req, res) => {
 
 
         if (!signupTypeCode) {
+
             const fam = await familySchema.validateAsync(req.body.family)
             let familyName = fam.familyName,
             familyColor = fam.familyColor || ""
@@ -45,7 +46,7 @@ router.post('/', async (req, res) => {
         remember = user.remember || false, // unused
         isAdmin = false,  //admin has to be set manually in the DB
         isFamilyAdmin = signupTypeCode ? false : true , //user is not familyAdmin in joined Families, but in new Family he is
-        linkedPerson = "", // unused
+        linkedPerson = "", // not used
         linkedFamily = signupTypeCode ? foundFamily.uuid : "" ,
         created2 = date.format(new Date(), 'DD.MM.YYYY HH:MM')
 
@@ -114,68 +115,75 @@ router.post('/', async (req, res) => {
             //io.to(val.linkedFamily).emit(collection, new Date());
 
         })
+        .then( r => {
+
+            // Sign JWT and create Token
+            jwt.sign({
+                username: valUser.username,
+                remember: valUser.remember,
+                isAdmin: valUser.isAdmin,
+                isFamilyAdmin: valUser.isFamilyAdmin,
+                linkedPerson: valUser.linkedPerson,
+                userUuid: valUser.uuid,
+                linkedFamily: valFamily.uuid,
+                created: valFamily.created
+            } , secret, { expiresIn: '30d' },
+                function(err, token) {
+                
+                logger.debug("signed Token... creating Cookies...")
+
+                // console.log(token)
+                res.cookie('fc_token', token, {
+                    sameSite: 'strict',
+                    httpOnly: true,
+                    secure: true
+                })
+                res.cookie('fc_backend_version', {
+                    version: backend,
+                    running: devstate
+                }, {
+                    sameSite: 'strict',
+                    httpOnly: false,
+                    secure: true
+                })
+                res.cookie('fc_user', 
+                JSON.stringify({
+                    username: valUser.username,
+                    remember: valUser.remember,
+                    isAdmin: valUser.isAdmin,
+                    isFamilyAdmin: valUser.isFamilyAdmin,
+                    linkedPerson: valUser.linkedPerson,
+                    userUuid: valUser.uuid,
+                    linkedFamily: valFamily.uuid })
+                , {
+                    sameSite: 'strict',
+                    httpOnly: false,
+                    secure: true
+                })
+                logger.debug("Cookies have been created ....")
+                logger.info(`New user has been created and is logged in.`)
+                res.status(200).json({message:"Created and Logged In..."});
+            });
+        })
+
         .catch((err) => {
             logger.error(err)
             res.status  (404).json(err)}) 
 
-    // Sign JWT and create Token
-    jwt.sign({
-        username: valUser.username,
-        remember: valUser.remember,
-        isAdmin: valUser.isAdmin,
-        isFamilyAdmin: valUser.isFamilyAdmin,
-        linkedPerson: valUser.linkedPerson,
-        userUuid: valUser.uuid,
-        linkedFamily: valFamily.uuid,
-        created: valFamily.created
-     } , secret, { expiresIn: '30d' },
-         function(err, token) {
-        
-        logger.debug("signed Token... creating Cookies...")
-
-        // console.log(token)
-        res.cookie('fc_token', token, {
-            sameSite: 'strict',
-            httpOnly: true,
-            secure: true
-        })
-        res.cookie('fc_backend_version', {
-            version: backend,
-            running: devstate
-        }, {
-            sameSite: 'strict',
-            httpOnly: false,
-            secure: true
-        })
-        res.cookie('fc_user', 
-        JSON.stringify({
-            username: valUser.username,
-            remember: valUser.remember,
-            isAdmin: valUser.isAdmin,
-            isFamilyAdmin: valUser.isFamilyAdmin,
-            linkedPerson: valUser.linkedPerson,
-            userUuid: valUser.uuid,
-            linkedFamily: valFamily.uuid })
-        , {
-            sameSite: 'strict',
-            httpOnly: false,
-            secure: true
-        })
-        logger.debug("Cookies have been created ....")
-        logger.info(`New user has been created and is logged in.`)
-        res.status(200).json({message:"Created and Logged In..."});
-    });
-    
+ 
     
         } else {
 
             // check for invitationcode and get info about the family
             
-            const findFamily = async (invitationCode) => {
+            logger.debug("starting the signup Process with an Invitation Code ... (179)")
+
+            async function findFamily(invitationCode) {
                 try {
                     const response = await findSome("family", { "invitationCode.code": invitationCode });
                     
                     if (response.length === 1) {
+                        logger.debug(`Found the Family with the Invitation Code ${response.uuid}...` )
                       return response;
                     
                     } else {
@@ -190,11 +198,13 @@ router.post('/', async (req, res) => {
             findFamily(invitationCode)
             .then(d => {
                 foundFamily = d[0]
-                console.log(foundFamily)
+                logger.debug(foundFamily)
                 const codeBox = foundFamily.invitationCode.filter(codeObj => codeObj.code === invitationCode)
                 const indexBox = foundFamily.invitationCode.findIndex(codeObj => codeObj.code === invitationCode)
                 // console.log("found index is: ", indexBox)
+                
                 if (!codeBox[0].valid) {
+                    logger.error("code is invalid... Aborting")
                     throw new Error("Invitation Code is invalid, Ask Family Admin for a new Code !");
                   } else {
 
@@ -220,106 +230,120 @@ router.post('/', async (req, res) => {
 
                     // Create a new user from the registration page
                     const result = write(collection, valUser)
-                        .then(async (s) => {
+                        .then(async () => {
                             // console.log('Item created :',s)
                             logger.info(`created a new User in ${collection} by user : ${valUser.username}`);
                             logger.debug(`Created User is ${JSON.stringify(valUser)}`)
 
                             //const createdUser = await findOneById("users", { _id: s.insertedId });
-                            return 
+                            // return 
                         })          
+                        .then( () => 
+                        {
 
+                            logger.debug(`The new user userUuid is : ${valUser.uuid}`)
+
+                 
+                            logger.debug(`... Adding User to the Family: ${valFamily}`)
+
+                            
+                            const newCodeInfo = {...foundFamily.invitationCode[indexBox], valid: false, usedBy: valUser.uuid}
+                            const updatedInvitationCodes = [
+                                ...foundFamily.invitationCode.slice(0, indexBox),
+                                newCodeInfo,
+                                ...foundFamily.invitationCode.slice(indexBox + 1)
+                            ];
+                            
+                            const updatedFamilyMembers = [...foundFamily.familyMember, valUser.uuid];
+                            
+                            const updatedFamilyData = {
+                                familyMember: updatedFamilyMembers,
+                                invitationCode: updatedInvitationCodes
+                            };
+
+                            const updatedFamily =  patchOne("family", foundFamily.uuid, updatedFamilyData)   
+                                .then( s => {
+                                    // console.log('Item created :',s)
+                                    logger.debug(`Family - Updated Family is ${JSON.stringify(foundFamily)}`)
+                                    //logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
+
+                                    // Adding a socket message to update all open pages
+                                    // Socket updates a useless state on all connected clients on the pages identified by the collection.
+                                    // The updated state triggers a page reload so that any new item immediately appears on the client.
+                                    //io.to(val.linkedFamily).emit(collection, new Date());
+
+                                })
+
+                                .then( () => {
+                                    
+                                    // Sign JWT and create Token
+                                    jwt.sign({
+                                        username: valUser.username,
+                                        remember: valUser.remember,
+                                        isAdmin: valUser.isAdmin,
+                                        isFamilyAdmin: valUser.isFamilyAdmin,
+                                        linkedPerson: valUser.linkedPerson,
+                                        userUuid: valUser.uuid,
+                                        linkedFamily: foundFamily.uuid,
+                                        created: valFamily.created
+                                    } , secret, { expiresIn: '30d' },
+                                        function(err, token) {
+                                        
+                                        logger.debug("signed Token... creating Cookies...")
+                        
+                                        // console.log(token)
+                                        res.cookie('fc_token', token, {
+                                            sameSite: 'strict',
+                                            httpOnly: true,
+                                            secure: true
+                                        })
+                                        res.cookie('fc_backend_version', {
+                                            version: backend,
+                                            running: devstate
+                                        }, {
+                                            sameSite: 'strict',
+                                            httpOnly: false,
+                                            secure: true
+                                        })
+                                        res.cookie('fc_user', 
+                                        JSON.stringify({
+                                            username: valUser.username,
+                                            remember: valUser.remember,
+                                            isAdmin: valUser.isAdmin,
+                                            isFamilyAdmin: valUser.isFamilyAdmin,
+                                            linkedPerson: valUser.linkedPerson,
+                                            userUuid: valUser.uuid,
+                                            linkedFamily: foundFamily.uuid })
+                                        , {
+                                            sameSite: 'strict',
+                                            httpOnly: false,
+                                            secure: true
+                                        })
+                                        logger.debug("Cookies have been created ....")
+                                        logger.info(`New user has been created and is logged in.`)
+                                        res.status(200).json({message:"Created and Logged In..."});
+                                    });
+                
+                
+                        })
+
+                        .catch((err) => {
+                            logger.error(err)
+                            res.status(404).json(err)}) 
+
+                        }
+
+
+                        )
                         .catch((err) => {
                             logger.error(err)
                             res.status(404).json(err)
                         })
                     
 
-                    logger.debug(`The new user userUuid is : ${valUser.uuid}`)
-
-                 
-                    logger.debug(`... Adding User to the Family: ${valFamily}`)
-
                     
-                    const newCodeInfo = {...foundFamily.invitationCode[indexBox], valid: false, usedBy: valUser.uuid}
-                    const updatedInvitationCodes = [
-                        ...foundFamily.invitationCode.slice(0, indexBox),
-                        newCodeInfo,
-                        ...foundFamily.invitationCode.slice(indexBox + 1)
-                      ];
-                    
-                    const updatedFamilyMembers = [...foundFamily.familyMember, valUser.uuid];
-                    
-                    const updatedFamilyData = {
-                        familyMember: updatedFamilyMembers,
-                        invitationCode: updatedInvitationCodes
-                      };
 
-                    const updatedFamily =  patchOne("family", foundFamily.uuid, updatedFamilyData)   
-                        .then( s => {
-                            // console.log('Item created :',s)
-                            logger.debug(`Family - Updated Family is ${JSON.stringify(foundFamily)}`)
-                            //logger.info(`created a new Family in ${collection} by user <${valUser.username}>: ${JSON.stringify(valFamily)}`);
-
-                            // Adding a socket message to update all open pages
-                            // Socket updates a useless state on all connected clients on the pages identified by the collection.
-                            // The updated state triggers a page reload so that any new item immediately appears on the client.
-                            //io.to(val.linkedFamily).emit(collection, new Date());
-
-                        })
-                        .catch((err) => {
-                            logger.error(err)
-                            res.status(404).json(err)}) 
-
-                    // Sign JWT and create Token
-                    jwt.sign({
-                        username: valUser.username,
-                        remember: valUser.remember,
-                        isAdmin: valUser.isAdmin,
-                        isFamilyAdmin: valUser.isFamilyAdmin,
-                        linkedPerson: valUser.linkedPerson,
-                        userUuid: valUser.uuid,
-                        linkedFamily: valFamily.uuid,
-                        created: valFamily.created
-                    } , secret, { expiresIn: '30d' },
-                        function(err, token) {
-                        
-                        logger.debug("signed Token... creating Cookies...")
-
-                        // console.log(token)
-                        res.cookie('fc_token', token, {
-                            sameSite: 'strict',
-                            httpOnly: true,
-                            secure: true
-                        })
-                        res.cookie('fc_backend_version', {
-                            version: backend,
-                            running: devstate
-                        }, {
-                            sameSite: 'strict',
-                            httpOnly: false,
-                            secure: true
-                        })
-                        res.cookie('fc_user', 
-                        JSON.stringify({
-                            username: valUser.username,
-                            remember: valUser.remember,
-                            isAdmin: valUser.isAdmin,
-                            isFamilyAdmin: valUser.isFamilyAdmin,
-                            linkedPerson: valUser.linkedPerson,
-                            userUuid: valUser.uuid,
-                            linkedFamily: valFamily.uuid })
-                        , {
-                            sameSite: 'strict',
-                            httpOnly: false,
-                            secure: true
-                        })
-                        logger.debug("Cookies have been created ....")
-                        logger.info(`New user has been created and is logged in.`)
-                        res.status(200).json({message:"Created and Logged In..."});
-                    });
-
-                  }
+                    }
                 })
             .then(e => console.log(e))
             .catch(error => {
