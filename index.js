@@ -11,6 +11,7 @@ import users from "./routes/users.js";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 
 
 import 'dotenv/config'
@@ -26,11 +27,21 @@ const backend = process.env.BACKEND || "unknown"  //to be set in Env variables
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost", "http://localhost:5173", "https://app.famcal.ch"], // Update these to match the client URLs
+        origin: ["http://localhost", "http://localhost:5173", "https://app.famcal.ch", "https://admin.socket.io"], // Update these to match the client URLs
         methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
         credentials: true
     }
 });
+
+instrument(io, {
+    auth: {
+    type: "basic",
+    username: "admin",
+    password: "$2a$10$w5JWi3X5stYarpOZ2eyX8.sMprYGX2MXBk.MmKV4o8rxIhhpW0Pau"
+    },
+    namespaceName: "/admin",
+    mode: "development",
+  });
 
 //Checking if a secret is defined in .env file. If not the app will crash immediately
 if (!secret) {
