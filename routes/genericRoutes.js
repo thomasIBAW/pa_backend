@@ -229,10 +229,11 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
                 // console.log('Item created :',s)
                 logger.info(`created a new item in ${collection} by user <${req.decoded.username}>: ${JSON.stringify(val)}`);
 
+                const information = {date: new Date(), user: req.decoded.username, type: "added", userid: req.decoded.userUuid }
                 // Adding a socket message to update all open pages
                 // Socket updates an useless state on all connected clients on the pages identified by the collection.
                 // The updated state triggers a page reload so that any new item immediately appears on the client.
-                io.to(val.linkedFamily).emit(collection, new Date());
+                io.to(req.family.uuid).emit(collection, information );
                 // sending result to client
                 res.status(200).json(val)
 
@@ -262,10 +263,11 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
                 .then((d) => {
                     logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
 
+                    const information = {date: new Date(), user: req.decoded.username, type: "removed", userid: req.decoded.userUuid }
                     // Adding a socket message to update all open pages
                     // Socket updates an useless state on all connected clients on the pages identified by the collection.
                     // The updated state triggers a page reload so that any new item immediately appears on the client.
-                    io.to(req.family.uuid).emit(collection, new Date());
+                    io.to(req.family.uuid).emit(collection, information );
 
                     res.status(200).json(d)
                 })
@@ -287,10 +289,11 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
                 deleteOne(collection, req.params.uuid)
                 .then((d) => {
                     logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
+                    const information = {date: new Date(), user: req.decoded.username, type: "removed", userid: req.decoded.userUuid }
                     // Adding a socket message to update all open pages
                     // Socket updates an useless state on all connected clients on the pages identified by the collection.
                     // The updated state triggers a page reload so that any new item immediately appears on the client.
-                    io.to(req.family.uuid).emit(collection, new Date());
+                    io.to(req.family.uuid).emit(collection, information );
                     res.status(200).json(d)
                 })
                 .catch((err) => {
@@ -319,10 +322,13 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
                 deleteOne(collection, req.params.uuid)
                 .then((d) => {
                     logger.warn(`User ${req.decoded.username} has deleted from collection ${collection} entry: ${req.params.uuid}`)
+                    
                     // Adding a socket message to update all open pages
                     // Socket updates an useless state on all connected clients on the pages identified by the collection.
                     // The updated state triggers a page reload so that any new item immediately appears on the client.
-                    io.to(req.family.uuid).emit(collection, new Date());                    
+                    const information = {date: new Date(), user: req.decoded.username, type: "removed", userid: req.decoded.userUuid }
+                    io.to(req.family.uuid).emit(collection, information );              
+                    //returning to client
                     res.status(200).json(d)
                 })
                 .catch((err) => {
@@ -353,10 +359,12 @@ router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(r
                 patchOne(collection, req.params.uuid, req.body)
                     .then((d) => {
                         logger.info(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
-                        // Adding a socket message to update all open pages
-                        // Socket updates an useless state on all connected clients on the pages identified by the collection.
-                        // The updated state triggers a page reload so that any new item immediately appears on the client.
-                        io.to(req.family.uuid).emit(collection, new Date());
+                    // Adding a socket message to update all open pages
+                    // Socket updates an useless state on all connected clients on the pages identified by the collection.
+                    // The updated state triggers a page reload so that any new item immediately appears on the client.
+                    const information = {date: new Date(), user: req.decoded.username, type: "updated", userid: req.decoded.userUuid }
+                    io.to(req.family.uuid).emit(collection, information );              
+                    //returning to client
                         res.status(200).json({message:d})})
                     .catch((err) => {
                         logger.error(err)
@@ -376,10 +384,12 @@ router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(r
                 patchOne(collection, req.params.uuid, req.body)
                     .then((d) => {
                         logger.info(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
-                        // Adding a socket message to update all open pages
-                        // Socket updates an useless state on all connected clients on the pages identified by the collection.
-                        // The updated state triggers a page reload so that any new item immediately appears on the client.
-                        io.to(req.family.uuid).emit(collection, new Date());
+                    // Adding a socket message to update all open pages
+                    // Socket updates an useless state on all connected clients on the pages identified by the collection.
+                    // The updated state triggers a page reload so that any new item immediately appears on the client.
+                    const information = {date: new Date(), user: req.decoded.username, type: "updated", userid: req.decoded.userUuid }
+                    io.to(req.family.uuid).emit(collection, information );              
+                    //returning to client
                         res.status(200).json({message:d})})
                     .catch((err) => {
                         logger.error(err)
@@ -408,10 +418,12 @@ router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(r
                 patchOne(collection, req.params.uuid, req.body)
                     .then((d) => {
                         logger.info(`Updated in collection ${collection} entry: ${req.params.uuid} by: ... `)
-                        // Adding a socket message to update all open pages
-                        // Socket updates an useless state on all connected clients on the pages identified by the collection.
-                        // The updated state triggers a page reload so that any new item immediately appears on the client.
-                        io.to(req.family.uuid).emit(collection, new Date());
+                     // Adding a socket message to update all open pages
+                    // Socket updates an useless state on all connected clients on the pages identified by the collection.
+                    // The updated state triggers a page reload so that any new item immediately appears on the client.
+                    const information = {date: new Date(), user: req.decoded.username, type: "updated", userid: req.decoded.userUuid }
+                    io.to(req.family.uuid).emit(collection, information );              
+                    //returning to client
                         res.status(200).json({message:d})})
                     .catch((err) => {
                         logger.error(err)
