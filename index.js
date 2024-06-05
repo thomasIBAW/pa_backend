@@ -44,9 +44,9 @@ instrument(io, {
   });
 
 //Checking if a secret is defined in .env file. If not the app will crash immediately
-if (!secret) {
-    throw new Error('Missing mySecret in .env file. See github wiki for details.');
-} else (logger.info('mySecret found in .env file at backend start.'))
+if (!secret || secret==="changeThisSecret") {
+    throw new Error('Missing or unchanged mySecret in .env file.');
+} else (logger.info('Modified mySecret found in .env file at backend start.'))
 
 app.use(express.json());
 app.use(cookieParser())
