@@ -143,7 +143,6 @@ router.post('/api/:coll', identUser, getFamilyCheck, checkUserInFamily,  async (
 
 // Endpoint to delete an item
 router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{
-    setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json({message:'Missing body...'})
     let body = {uuid : req.params.uuid}
@@ -240,7 +239,6 @@ router.delete('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(
 
 // Endpoint to Update am item
 router.patch('/api/:coll/:uuid', identUser, getFamilyCheck, checkUserInFamily,(req, res) =>{
-    setCollection(req.params.coll);
 
     if (!req.body) return res.status(404).json({message:'Missing body...'})
 
