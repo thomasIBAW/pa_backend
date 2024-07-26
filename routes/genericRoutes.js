@@ -18,11 +18,23 @@ let collection = "";
 
 function setCollection(x) {
         switch (x) {
+            case ('calendar') :
+                collection = 'appointments';
+                break;
             case ('people') :
                 collection = 'people';
                 break;
             case ('tags') :
                 collection = 'tags';
+                break;
+            case ('todos') :
+                collection = 'todos';
+                break;
+            case ('users') :
+                collection = 'users';
+                break;
+            case ('family') :
+                collection = 'family';
                 break;
         }
     }
