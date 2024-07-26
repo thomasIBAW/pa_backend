@@ -3,6 +3,7 @@ import {logger} from './middlewares/loggers.js'
 import genericRoutes from "./routes/genericRoutes.js";
 import family from "./routes/family.js";
 import calendar from "./routes/calendar.js";
+import todos from "./routes/todos.js";
 import logoutRoutes from "./routes/logout.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
@@ -61,8 +62,11 @@ app.use(cors({
 //Adding a route for family
 app.use('/api/family', family)
 
-//Adding a route for family
+//Adding a route for calendar
 app.use('/api/calendar', calendar)
+
+//Adding a route for todos
+app.use('/api/todos', todos)
 
 //Adding a route for family
 app.use('/api/users', users)
