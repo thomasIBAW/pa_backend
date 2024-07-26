@@ -2,6 +2,7 @@ import express from 'express';
 import {logger} from './middlewares/loggers.js'
 import genericRoutes from "./routes/genericRoutes.js";
 import family from "./routes/family.js";
+import calendar from "./routes/calendar.js";
 import logoutRoutes from "./routes/logout.js";
 import loginRoutes from "./routes/login.js";
 import signupRoutes from "./routes/signup.js"
@@ -61,15 +62,18 @@ app.use(cors({
 app.use('/api/family', family)
 
 //Adding a route for family
+app.use('/api/calendar', calendar)
+
+//Adding a route for family
 app.use('/api/users', users)
 
 //Adding a route for Login (no token needed, returns a token if authentication succeeded)
 app.use('/login', loginRoutes)
 
-//Adding a route for Login (no token needed, returns a token if authentication succeeded)
+//Adding a route for Logouz 
 app.use('/logout', logoutRoutes)
 
-//Adding a route fir signup (no token needed to create a new user and new family)
+//Adding a route for signup (no token needed to create a new user and new family)
 app.use('/signup', signupRoutes)
 
 app.use('/me', meRoutes)
